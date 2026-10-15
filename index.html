@@ -75,6 +75,12 @@
   .linkedit .ladd { align-self:flex-start; }
   .moreRows { padding:12px; text-align:center; color:var(--muted); font-size:13px; border-top:1px solid var(--line); }
   .moreRows button { margin-left:6px; }
+  button.toggle.active { border-color:var(--warn); color:var(--warn); }
+  button.star { border:0; background:transparent; font-size:18px; line-height:1; padding:0 4px; color:var(--muted); }
+  button.star:hover { color:var(--warn); }
+  button.star.on { color:var(--warn); }
+  td.pin { text-align:center; }
+  tr.pinned td:first-child { box-shadow:inset 3px 0 0 var(--warn); }
   .chip.hold { color:var(--muted); border-color:var(--muted); }
   .remain.hold { color:var(--muted); font-weight:400; }
   tr.hold td { color:var(--muted); }
@@ -174,6 +180,7 @@
       <select id="fPriority"></select>
       <select id="fDueRel"></select>
       <label class="chk"><input type="checkbox" id="fHideDone" checked> 完了を隠す</label>
+      <button id="btnPinFirst" class="toggle" title="★付きのタスクを、並び順に関係なく先頭に表示します"></button>
       <button id="btnAdv" title="AND / OR で複数の条件を組み合わせられます">詳細条件 ▾</button>
       <button id="btnClear" class="ghost">クリア</button>
       <span class="sep"></span>
@@ -259,6 +266,7 @@
   const defaultFilters = () => ({ text:'', textField:'all', status:'', priority:'', hideDone:true, dueRel:'', mode:'and', conds:[] });
   const filters = defaultFilters();
   let advOpen = false;         // 詳細条件パネルの開閉
+  let pinFirst = (() => { try { return localStorage.getItem('taskPinFirst') !== '0'; } catch { return true; } })(); // ★付きを先頭に固定
   let presets = [];            // 保存した絞り込み条件 (ファイルに一緒に保存)
   let undoStack = [], redoStack = [];
   const DUE_RELS = [['overdue','期限切れ'], ['today','今日'], ['d3','明日〜3日後'], ['d7','7日以内(今日含む)'], ['none','期日なし']];
@@ -423,6 +431,7 @@
     status:    { label: 'ステータス', type: 'enum', options: toPairs(STATUSES) },
     priority:  { label: '優先度', type: 'enum', options: toPairs(PRIORITIES) },
     dueRel:    { label: '期日の状態', type: 'enum', options: DUE_RELS },
+    pinned:    { label: '★ピン留め', type: 'enum', options: [['yes', '★あり'], ['no', '★なし']] },
     due:       { label: '期日', type: 'date' },
     start:     { label: '着手日', type: 'date' },
     created:   { label: '起票日', type: 'date' },
@@ -449,7 +458,7 @@
       return c.op === 'not' ? !hay.includes(q) : c.op === 'eq' ? hay === q : hay.includes(q);
     }
     if (d.type === 'enum') {
-      const m = c.field === 'dueRel' ? matchDueRel(t, v) : t[c.field] === v;
+      const m = c.field === 'dueRel' ? matchDueRel(t, v) : c.field === 'pinned' ? !!t.pinned === (v === 'yes') : t[c.field] === v;
       return c.op === 'isnot' ? !m : m;
     }
     if (d.type === 'date') {
@@ -492,6 +501,7 @@
         case 'priority': return PRIO_ORDER[t.priority] ?? 9;
         case 'status': return STATUS_ORDER[t.status] ?? 9;
         case 'remain': return t.status === '完了' ? null : remainDays(t);
+        case 'pinned': return t.pinned ? 0 : 1;
         case 'name': return t.name || '';
         default: return t[sort.k] || null;
       }
@@ -503,6 +513,7 @@
       if (y === null) return -1;
       return (x < y ? -1 : x > y ? 1 : 0) * sort.dir;
     });
+    if (pinFirst) list = [...list.filter(t => t.pinned), ...list.filter(t => !t.pinned)]; // 並び順に関係なく★を先頭に (★内は現在の並び順)
     return list;
   }
 
@@ -589,9 +600,11 @@
   const linkRow = (l = { title: '', url: '' }) =>
     `<div class="lrow"><input type="text" class="l-title" placeholder="別名(省略可)" value="${esc(l.title)}"><input type="text" class="l-url" placeholder="https://… または C:\フォルダ\ファイル" value="${esc(urlToInput(l.url))}"><button type="button" class="lrm" data-a="lrm" title="この行を削除">×</button></div>`;
   const linkEdit = t => `<td><div class="linkedit">${((t.links || []).length ? t.links : [undefined]).map(linkRow).join('')}<button type="button" class="ladd" data-a="ladd">＋ リンク追加</button></div></td>`;
+  const pinCell = t => `<td class="pin"><button type="button" class="star${t.pinned ? ' on' : ''}" data-a="pin" title="${t.pinned ? 'ピン留めを外す' : 'ピン留めする(先頭に固定)'}">${t.pinned ? '★' : '☆'}</button></td>`;
   const effortCell = t => `<td><input type="number" class="effort" data-f="effort" min="0" step="0.5" value="${esc(t.effort ?? '')}" placeholder="h"></td>`;
   const dateEdit = (id, v) => `<td><input type="date" id="${id}" value="${esc(v)}"></td>`;
   const COLS = {
+    pin:       { label: '★', sort: 'pinned', w: 44, view: pinCell, edit: pinCell },
     created:   { label: '起票日', sort: 'created', w: 130,
                  view: t => `<td>${esc(t.created)}</td>`, edit: t => dateEdit('e_created', t.created) },
     name:      { label: 'タスク名', sort: 'name', w: 200,
@@ -622,7 +635,8 @@
   let colOrder = (() => {
     const a = readJSON('taskColOrder2'); if (!Array.isArray(a)) return DEFAULT_ORDER.slice();
     const known = a.filter(k => k in COLS && k !== 'act');
-    return [...known, ...DEFAULT_ORDER.filter(k => k !== 'act' && !known.includes(k)), 'act'];
+    const missing = DEFAULT_ORDER.filter(k => k !== 'act' && !known.includes(k));
+    return [...missing.filter(k => k === 'pin'), ...known, ...missing.filter(k => k !== 'pin'), 'act'];
   })();
   let colW = { ...Object.fromEntries(DEFAULT_ORDER.map(k => [k, COLS[k].w])), ...(readJSON('taskColW2') || {}) };
   const saveLayout = () => { try { localStorage.setItem('taskColOrder2', JSON.stringify(colOrder)); localStorage.setItem('taskColW2', JSON.stringify(colW)); } catch {} };
@@ -631,7 +645,8 @@
     if (t.id === editingId) return `<tr class="editing" data-id="${t.id}">${colOrder.map(k => COLS[k].edit(t)).join('')}</tr>`;
     const r = remainDays(t);
     const cls = t.status === '完了' ? 'done' : t.status === '保留' ? 'hold' : r === null ? '' : r < 0 ? 'overdue' : r === 0 ? 'today' : '';
-    return `<tr class="${cls}" data-id="${t.id}">${colOrder.map(k => COLS[k].view(t)).join('')}</tr>`;
+    const rowCls = cls + (t.pinned ? ' pinned' : '');
+    return `<tr class="${rowCls}" data-id="${t.id}">${colOrder.map(k => COLS[k].view(t)).join('')}</tr>`;
   }
 
   function renderHead() {
@@ -735,7 +750,7 @@
     const fresh = newId && tasks.find(x => x.id === newId);
     if (fresh) { const i = list.indexOf(fresh); if (i >= 0) list.splice(i, 1); list.unshift(fresh); } // 追加直後の行は常に先頭で入力
     // 件数が多いときは先頭から段階的に表示 (条件・並び順を変えると先頭に戻る)
-    const sig = JSON.stringify([filters, sort]);
+    const sig = JSON.stringify([filters, sort, pinFirst]);
     if (sig !== lastSig) { limit = PAGE_SIZE; lastSig = sig; }
     const view = list.slice(0, limit);
     $('rows').innerHTML = view.map(rowHtml).join('');
@@ -820,6 +835,14 @@
     more.addEventListener('click', e => { if (e.target.closest('.menu button')) more.open = false; });
     document.addEventListener('mousedown', e => { if (more.open && !more.contains(e.target)) more.open = false; });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') more.open = false; });
+
+    const paintPin = () => { const b = $('btnPinFirst'); b.textContent = '★ 先頭に固定: ' + (pinFirst ? 'ON' : 'OFF'); b.classList.toggle('active', pinFirst); };
+    paintPin();
+    $('btnPinFirst').onclick = () => {
+      pinFirst = !pinFirst;
+      try { localStorage.setItem('taskPinFirst', pinFirst ? '1' : '0'); } catch {}
+      paintPin(); render();
+    };
 
     // 詳細条件 (AND / OR)
     $('btnAdv').onclick = () => { advOpen = !advOpen; renderConds(); };
@@ -928,6 +951,10 @@
       const tr = btn.closest('tr'); const t = tasks.find(x => x.id === tr.dataset.id); if (!t) return;
       switch (btn.dataset.a) {
         case 'edit': editingId = t.id; render(); break;
+        case 'pin':
+          pushUndo(t.pinned ? 'ピン留め解除' : 'ピン留め');
+          if (t.pinned) delete t.pinned; else t.pinned = true;
+          save(); render(); break;
         case 'links': showLinkMenu(btn, t); break;
         case 'ladd': {
           btn.insertAdjacentHTML('beforebegin', linkRow());
