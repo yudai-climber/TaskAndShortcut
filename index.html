@@ -76,9 +76,9 @@
   .moreRows { padding:12px; text-align:center; color:var(--muted); font-size:13px; border-top:1px solid var(--line); }
   .moreRows button { margin-left:6px; }
   button.toggle.active { border-color:var(--warn); color:var(--warn); }
-  button.star { border:0; background:transparent; font-size:18px; line-height:1; padding:0 4px; color:var(--muted); }
-  button.star:hover { color:var(--warn); }
-  button.star.on { color:var(--warn); }
+  button.star { border:0; background:transparent; font-size:16px; line-height:1; padding:2px 4px; filter:grayscale(1); opacity:.35; }
+  button.star:hover { filter:none; opacity:.8; }
+  button.star.on { filter:none; opacity:1; }
   td.pin { text-align:center; }
   tr.pinned td:first-child { box-shadow:inset 3px 0 0 var(--warn); }
   .chip.hold { color:var(--muted); border-color:var(--muted); }
@@ -180,7 +180,7 @@
       <select id="fPriority"></select>
       <select id="fDueRel"></select>
       <label class="chk"><input type="checkbox" id="fHideDone" checked> 完了を隠す</label>
-      <button id="btnPinFirst" class="toggle" title="★付きのタスクを、並び順に関係なく先頭に表示します"></button>
+      <button id="btnPinFirst" class="toggle" title="ピン留めしたタスクを、並び順に関係なく先頭に表示します"></button>
       <button id="btnAdv" title="AND / OR で複数の条件を組み合わせられます">詳細条件 ▾</button>
       <button id="btnClear" class="ghost">クリア</button>
       <span class="sep"></span>
@@ -266,7 +266,7 @@
   const defaultFilters = () => ({ text:'', textField:'all', status:'', priority:'', hideDone:true, dueRel:'', mode:'and', conds:[] });
   const filters = defaultFilters();
   let advOpen = false;         // 詳細条件パネルの開閉
-  let pinFirst = (() => { try { return localStorage.getItem('taskPinFirst') !== '0'; } catch { return true; } })(); // ★付きを先頭に固定
+  let pinFirst = (() => { try { return localStorage.getItem('taskPinFirst') !== '0'; } catch { return true; } })(); // ピン留めを先頭に固定
   let presets = [];            // 保存した絞り込み条件 (ファイルに一緒に保存)
   let undoStack = [], redoStack = [];
   const DUE_RELS = [['overdue','期限切れ'], ['today','今日'], ['d3','明日〜3日後'], ['d7','7日以内(今日含む)'], ['none','期日なし']];
@@ -431,7 +431,7 @@
     status:    { label: 'ステータス', type: 'enum', options: toPairs(STATUSES) },
     priority:  { label: '優先度', type: 'enum', options: toPairs(PRIORITIES) },
     dueRel:    { label: '期日の状態', type: 'enum', options: DUE_RELS },
-    pinned:    { label: '★ピン留め', type: 'enum', options: [['yes', '★あり'], ['no', '★なし']] },
+    pinned:    { label: 'ピン留め', type: 'enum', options: [['yes', 'ピンあり'], ['no', 'ピンなし']] },
     due:       { label: '期日', type: 'date' },
     start:     { label: '着手日', type: 'date' },
     created:   { label: '起票日', type: 'date' },
@@ -513,7 +513,7 @@
       if (y === null) return -1;
       return (x < y ? -1 : x > y ? 1 : 0) * sort.dir;
     });
-    if (pinFirst) list = [...list.filter(t => t.pinned), ...list.filter(t => !t.pinned)]; // 並び順に関係なく★を先頭に (★内は現在の並び順)
+    if (pinFirst) list = [...list.filter(t => t.pinned), ...list.filter(t => !t.pinned)]; // 並び順に関係なくピン留めを先頭に (ピン内は現在の並び順)
     return list;
   }
 
@@ -600,11 +600,11 @@
   const linkRow = (l = { title: '', url: '' }) =>
     `<div class="lrow"><input type="text" class="l-title" placeholder="別名(省略可)" value="${esc(l.title)}"><input type="text" class="l-url" placeholder="https://… または C:\フォルダ\ファイル" value="${esc(urlToInput(l.url))}"><button type="button" class="lrm" data-a="lrm" title="この行を削除">×</button></div>`;
   const linkEdit = t => `<td><div class="linkedit">${((t.links || []).length ? t.links : [undefined]).map(linkRow).join('')}<button type="button" class="ladd" data-a="ladd">＋ リンク追加</button></div></td>`;
-  const pinCell = t => `<td class="pin"><button type="button" class="star${t.pinned ? ' on' : ''}" data-a="pin" title="${t.pinned ? 'ピン留めを外す' : 'ピン留めする(先頭に固定)'}">${t.pinned ? '★' : '☆'}</button></td>`;
+  const pinCell = t => `<td class="pin"><button type="button" class="star${t.pinned ? ' on' : ''}" data-a="pin" title="${t.pinned ? 'ピン留めを外す' : 'ピン留めする(先頭に固定)'}">📌</button></td>`;
   const effortCell = t => `<td><input type="number" class="effort" data-f="effort" min="0" step="0.5" value="${esc(t.effort ?? '')}" placeholder="h"></td>`;
   const dateEdit = (id, v) => `<td><input type="date" id="${id}" value="${esc(v)}"></td>`;
   const COLS = {
-    pin:       { label: '★', sort: 'pinned', w: 44, view: pinCell, edit: pinCell },
+    pin:       { label: '📌', sort: 'pinned', w: 44, view: pinCell, edit: pinCell },
     created:   { label: '起票日', sort: 'created', w: 130,
                  view: t => `<td>${esc(t.created)}</td>`, edit: t => dateEdit('e_created', t.created) },
     name:      { label: 'タスク名', sort: 'name', w: 200,
@@ -836,7 +836,7 @@
     document.addEventListener('mousedown', e => { if (more.open && !more.contains(e.target)) more.open = false; });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') more.open = false; });
 
-    const paintPin = () => { const b = $('btnPinFirst'); b.textContent = '★ 先頭に固定: ' + (pinFirst ? 'ON' : 'OFF'); b.classList.toggle('active', pinFirst); };
+    const paintPin = () => { const b = $('btnPinFirst'); b.textContent = '📌 先頭に固定: ' + (pinFirst ? 'ON' : 'OFF'); b.classList.toggle('active', pinFirst); };
     paintPin();
     $('btnPinFirst').onclick = () => {
       pinFirst = !pinFirst;
