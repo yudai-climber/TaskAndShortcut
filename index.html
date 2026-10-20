@@ -82,6 +82,9 @@
   button.star.on { filter:none; opacity:1; }
   td.pin { text-align:center; }
   tr.pinned td:first-child { box-shadow:inset 3px 0 0 var(--warn); }
+  .colrow { display:inline-flex; align-items:center; gap:2px; margin:2px 14px 2px 0; }
+  .colrow label { display:inline-flex; align-items:center; gap:4px; min-width:130px; }
+  #colList { display:flex; flex-wrap:wrap; }
   .chip.hold { color:var(--muted); border-color:var(--muted); }
   .remain.hold { color:var(--muted); font-weight:400; }
   tr.hold td { color:var(--muted); }
@@ -191,11 +194,16 @@
         <div class="menu">
           <button id="btnPresetSave">現在の条件を保存…</button>
           <button id="btnPresetDel" class="danger">選択中の条件を削除</button>
+          <button id="btnCols">表示項目の設定…</button>
           <button id="btnColReset" title="見出しのドラッグで列の移動、境界のドラッグで列幅を変更できます">列の並び・幅を初期化</button>
         </div>
       </details>
       <span class="count" id="count"></span>
       <button class="primary" id="btnAdd">＋ タスク追加</button>
+    </div>
+    <div class="adv" id="colPanel" hidden>
+      <div class="adv-head"><b>表示項目の設定</b><span>チェックで表示/非表示を切り替えます。並び順は、一覧の見出しをドラッグして変更できます。設定はデータファイルに保存されます。</span><button id="btnColClose" class="ghost">閉じる</button></div>
+      <div id="colList"></div>
     </div>
     <div class="adv" id="adv" hidden>
       <div class="adv-head">
@@ -288,8 +296,8 @@
     return /^[0-9a-z]{13}$/.test(t.id || '') && ms > 1.5e12 && ms < 4.1e12 ? ms : null;
   };
   const createdTs = t => realTs(t) ?? (parseDate(t.created)?.getTime() ?? 0);
-  const NEW_HOURS = 24;                       // 作成から この時間内は「NEW」を表示
-  const isNew = t => { const ts = realTs(t); return ts !== null && Date.now() - ts < NEW_HOURS * 3600e3; };
+  // NEW: 本日追加され、まだ一度も更新されていないタスク
+  const isNew = t => { const ts = realTs(t); return ts !== null && !t.updatedAt && localISO(new Date(ts)) === localISO(new Date()); };
   const fmtTs = ms => { const d = new Date(ms); return `${localISO(d)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 
   // ---------- ファイル入出力 ----------
@@ -317,6 +325,7 @@
       delete t.link;
     });
     presets = (!Array.isArray(data) && data.presets) || [];
+    if (!Array.isArray(data) && data.settings) { applySettings(data.settings); paintPin(); renderColPanel(); }
   }
 
   // ---------- 元に戻す / やり直す ----------
@@ -346,7 +355,7 @@
 
   // ステータス変更 (完了日の自動記録)
   function setStatus(t, v) {
-    t.status = v;
+    t.status = v; t.updatedAt = Date.now();
     if (v === '完了') { if (!t.completed) t.completed = localISO(today()); }
     else delete t.completed;
   }
@@ -358,7 +367,7 @@
         // OneDrive の同期などでファイルが書込み中に変化すると InvalidStateError になるため、再試行する
         await retry(async () => {
           const w = await handle.createWritable();
-          await w.write(JSON.stringify({ version: 1, tasks: tasks.filter(x => x.id !== newId), presets }, null, 2));
+          await w.write(JSON.stringify({ version: 1, tasks: tasks.filter(x => x.id !== newId), presets, settings: layoutSettings() }, null, 2));
           await w.close();
         });
         try { lastModified = (await handle.getFile()).lastModified; } catch { /* 保存自体は成功 */ }
@@ -525,7 +534,9 @@
       if (y === null) return -1;
       return (x < y ? -1 : x > y ? 1 : 0) * sort.dir;
     });
-    if (pinFirst) list = [...list.filter(t => t.pinned), ...list.filter(t => !t.pinned)]; // 並び順に関係なくピン留めを先頭に (ピン内は現在の並び順)
+    // 並び順に関係なく、ピン留め → NEW(本日追加・未更新) → その他 の順に表示 (各グループ内は現在の並び順)
+    const rank = t => (pinFirst && t.pinned) ? 0 : isNew(t) ? 1 : 2;
+    list = [0, 1, 2].flatMap(r => list.filter(t => rank(t) === r));
     return list;
   }
 
@@ -620,7 +631,7 @@
     created:   { label: '起票日', sort: 'created', w: 130,
                  view: t => `<td${realTs(t) !== null ? ` title="作成: ${fmtTs(realTs(t))}"` : ''}>${esc(t.created)}</td>`, edit: t => dateEdit('e_created', t.created) },
     name:      { label: 'タスク名', sort: 'name', w: 200,
-                 view: t => `<td class="name">${isNew(t) ? '<span class="newbadge" title="作成から24時間以内">NEW</span>' : ''}${esc(t.name) || '<span style="color:var(--muted)">(無題)</span>'}</td>`,
+                 view: t => `<td class="name">${isNew(t) ? '<span class="newbadge" title="本日追加(未更新)">NEW</span>' : ''}${esc(t.name) || '<span style="color:var(--muted)">(無題)</span>'}</td>`,
                  edit: t => `<td class="name"><input type="text" id="e_name" value="${esc(t.name)}" placeholder="タスク名"></td>` },
     start:     { label: '着手日', sort: 'start', w: 130,
                  view: t => `<td>${t.start ? esc(t.start) : '<button data-a="start">着手開始</button>'}</td>`, edit: t => dateEdit('e_start', t.start) },
@@ -644,25 +655,45 @@
   };
   const DEFAULT_ORDER = Object.keys(COLS);
   const readJSON = key => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } };
-  let colOrder = (() => {
-    const a = readJSON('taskColOrder2'); if (!Array.isArray(a)) return DEFAULT_ORDER.slice();
-    const known = a.filter(k => k in COLS && k !== 'act');
+  const normOrder = a => {
+    const known = (Array.isArray(a) ? a : []).filter(k => k in COLS && k !== 'act');
     const missing = DEFAULT_ORDER.filter(k => k !== 'act' && !known.includes(k));
     return [...missing.filter(k => k === 'pin'), ...known, ...missing.filter(k => k !== 'pin'), 'act'];
-  })();
-  let colW = { ...Object.fromEntries(DEFAULT_ORDER.map(k => [k, COLS[k].w])), ...(readJSON('taskColW2') || {}) };
-  const saveLayout = () => { try { localStorage.setItem('taskColOrder2', JSON.stringify(colOrder)); localStorage.setItem('taskColW2', JSON.stringify(colW)); } catch {} };
+  };
+  const normHidden = a => new Set((Array.isArray(a) ? a : []).filter(k => k in COLS && k !== 'name' && k !== 'act')); // タスク名と操作列は常に表示
+  const defaultW = () => Object.fromEntries(DEFAULT_ORDER.map(k => [k, COLS[k].w]));
+  let colOrder = normOrder(readJSON('taskColOrder2'));
+  let colHidden = normHidden(readJSON('taskColHidden'));
+  let colW = { ...defaultW(), ...(readJSON('taskColW2') || {}) };
+  const visCols = () => colOrder.filter(k => !colHidden.has(k));
+  // 表示設定は、このブラウザに加えてデータファイルにも保存する (ブラウザのデータが消えても、別の PC でも保持される)
+  const layoutSettings = () => ({ colOrder, colW, hidden: [...colHidden], pinFirst });
+  function storeLayoutLocal() {
+    try {
+      localStorage.setItem('taskColOrder2', JSON.stringify(colOrder)); localStorage.setItem('taskColW2', JSON.stringify(colW));
+      localStorage.setItem('taskColHidden', JSON.stringify([...colHidden])); localStorage.setItem('taskPinFirst', pinFirst ? '1' : '0');
+    } catch {}
+  }
+  function applySettings(st) {
+    if (!st || typeof st !== 'object') return;
+    if (Array.isArray(st.colOrder)) colOrder = normOrder(st.colOrder);
+    if (st.colW && typeof st.colW === 'object') colW = { ...defaultW(), ...st.colW };
+    if (Array.isArray(st.hidden)) colHidden = normHidden(st.hidden);
+    if (typeof st.pinFirst === 'boolean') pinFirst = st.pinFirst;
+    storeLayoutLocal();
+  }
+  function saveLayout() { storeLayoutLocal(); if (handle) save(); }
 
   function rowHtml(t) {
-    if (t.id === editingId) return `<tr class="editing" data-id="${t.id}">${colOrder.map(k => COLS[k].edit(t)).join('')}</tr>`;
+    if (t.id === editingId) return `<tr class="editing" data-id="${t.id}">${visCols().map(k => COLS[k].edit(t)).join('')}</tr>`;
     const r = remainDays(t);
     const cls = t.status === '完了' ? 'done' : t.status === '保留' ? 'hold' : r === null ? '' : r < 0 ? 'overdue' : r === 0 ? 'today' : '';
     const rowCls = cls + (t.pinned ? ' pinned' : '');
-    return `<tr class="${rowCls}" data-id="${t.id}">${colOrder.map(k => COLS[k].view(t)).join('')}</tr>`;
+    return `<tr class="${rowCls}" data-id="${t.id}">${visCols().map(k => COLS[k].view(t)).join('')}</tr>`;
   }
 
   function renderHead() {
-    $('thead').innerHTML = '<tr>' + colOrder.map(k => {
+    $('thead').innerHTML = '<tr>' + visCols().map(k => {
       const c = COLS[k];
       const arrow = c.sort && c.sort === sort.k ? (sort.dir > 0 ? '▲' : '▼') : '';
       return `<th data-key="${k}"${c.sort ? ` class="sortable" data-sort="${c.sort}"` : ''}${k !== 'act' ? ' draggable="true" title="ドラッグで列を移動"' : ''}>${c.label}${c.sort ? ` <span class="arrow">${arrow}</span>` : ''}<span class="rs"></span></th>`;
@@ -673,13 +704,14 @@
     // 編集中はリンク入力欄のために一時的に幅を確保
     // 画面幅に収まる範囲で広げる (備考の最低幅160pxは確保し、横スクロールを出さない)
     const avail = $('tbl').parentNode.clientWidth;
-    const others = colOrder.reduce((a, k) => a + (k === 'link' || k === 'note' ? 0 : colW[k]), 0);
+    const cols = visCols();
+    const others = cols.reduce((a, k) => a + (k === 'link' || k === 'note' ? 0 : colW[k]), 0);
     const editLinkW = Math.max(colW.link, Math.min(300, avail - others - 160));
-    const ws = colOrder.map(k => k === 'link' && editingId ? editLinkW : colW[k]);
+    const ws = cols.map(k => k === 'link' && editingId ? editLinkW : colW[k]);
     // 備考列だけ幅指定なし: 画面幅いっぱいに広げ、余った幅を備考が吸収する (他の列の合計+備考の最小幅を下回ったら横スクロール)
-    $('cols').innerHTML = colOrder.map((k, i) => k === 'note' ? '<col>' : `<col style="width:${ws[i]}px">`).join('');
+    $('cols').innerHTML = cols.map((k, i) => k === 'note' ? '<col>' : `<col style="width:${ws[i]}px">`).join('');
     $('tbl').style.width = '100%';
-    $('tbl').style.minWidth = colOrder.reduce((a, k, i) => a + (k === 'note' ? 160 : ws[i]), 0) + 'px';
+    $('tbl').style.minWidth = cols.reduce((a, k, i) => a + (k === 'note' ? 160 : ws[i]), 0) + 'px';
   }
 
   function bindHead() {
@@ -739,8 +771,8 @@
     head.addEventListener('dragend', () => { dragKey = null; marks(); });
 
     $('btnColReset').onclick = () => {
-      colOrder = DEFAULT_ORDER.slice(); colW = Object.fromEntries(DEFAULT_ORDER.map(k => [k, COLS[k].w]));
-      saveLayout(); render();
+      colOrder = DEFAULT_ORDER.slice(); colW = defaultW(); colHidden = new Set();
+      saveLayout(); renderColPanel(); render();
     };
   }
 
@@ -818,6 +850,18 @@
   }
 
   // ---------- イベント ----------
+  function paintPin() {
+    const b = $('btnPinFirst'); if (!b) return;
+    b.textContent = '📌 先頭に固定: ' + (pinFirst ? 'ON' : 'OFF'); b.classList.toggle('active', pinFirst);
+  }
+  const COL_NAMES = { pin: 'ピン留め', act: '操作(編集・削除)' };
+  function renderColPanel() {
+    const el = $('colList'); if (!el) return;
+    el.innerHTML = colOrder.map(k => {
+      const req = k === 'name' || k === 'act';
+      return `<div class="colrow"><label><input type="checkbox" data-col="${k}"${colHidden.has(k) ? '' : ' checked'}${req ? ' disabled' : ''}> ${esc(COL_NAMES[k] || COLS[k].label)}</label></div>`;
+    }).join('');
+  }
   function bindFilters() {
     $('fStatus').innerHTML = '<option value="">ステータス: すべて</option>' + opts(STATUSES);
     $('fPriority').innerHTML = '<option value="">優先度: すべて</option>' + opts(PRIORITIES);
@@ -848,13 +892,20 @@
     document.addEventListener('mousedown', e => { if (more.open && !more.contains(e.target)) more.open = false; });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') more.open = false; });
 
-    const paintPin = () => { const b = $('btnPinFirst'); b.textContent = '📌 先頭に固定: ' + (pinFirst ? 'ON' : 'OFF'); b.classList.toggle('active', pinFirst); };
     paintPin();
     $('btnPinFirst').onclick = () => {
       pinFirst = !pinFirst;
-      try { localStorage.setItem('taskPinFirst', pinFirst ? '1' : '0'); } catch {}
-      paintPin(); render();
+      saveLayout(); paintPin(); render();
     };
+
+    // 表示項目の設定
+    $('btnCols').onclick = () => { renderColPanel(); $('colPanel').hidden = false; };
+    $('btnColClose').onclick = () => { $('colPanel').hidden = true; };
+    $('colList').addEventListener('change', e => {
+      const k = e.target.dataset.col; if (!k) return;
+      if (e.target.checked) colHidden.delete(k); else colHidden.add(k);
+      saveLayout(); render();
+    });
 
     // 詳細条件 (AND / OR)
     $('btnAdv').onclick = () => { advOpen = !advOpen; renderConds(); };
@@ -990,11 +1041,13 @@
           }
           break;
         case 'ok': {
-          const name = $('e_name').value.trim();
-          const start = $('e_start').value, due = $('e_due').value;
-          if (!name) { alert('タスク名を入力してください'); $('e_name').focus(); return; }
+          const val = (id, d) => { const el = $(id); return el ? el.value : d; };   // 非表示の列は入力欄が無いので既存値を使う
+          const name = val('e_name', t.name).trim();
+          const start = val('e_start', t.start), due = val('e_due', t.due);
+          if (!name) { alert('タスク名を入力してください'); $('e_name')?.focus(); return; }
           if (start && due && start > due) { alert('着手日が期日より後になっています'); return; }
-          const seen = new Set(); const links = [];
+          const seen = new Set(); let links = t.links || [];
+          if (tr.querySelector('.lrow')) links = [];
           for (const row of tr.querySelectorAll('.lrow')) {
             const title = row.querySelector('.l-title').value.trim();
             let url = row.querySelector('.l-url').value.trim();
@@ -1004,8 +1057,9 @@
             if (!seen.has(url)) { seen.add(url); links.push({ title, url }); }
           }
           pushUndo(t.id === newId ? '追加' : '編集');
-          Object.assign(t, { name, created: $('e_created').value, start, due, priority: $('e_priority').value, links });
+          Object.assign(t, { name, created: val('e_created', t.created), start, due, priority: val('e_priority', t.priority), links });
           delete t.link;
+          if (t.id !== newId) t.updatedAt = Date.now();   // 新規の登録は「更新」に数えない
           editingId = null; newId = null; save(); render(); break;
         }
         case 'del':
@@ -1020,6 +1074,14 @@
       if (!e.target.matches('tr.editing input')) return;
       e.preventDefault();
       e.target.closest('tr').querySelector('button[data-a="ok"]').click();
+    });
+
+    // 備考・工数をその場で編集中の Ctrl+Enter → フォーカスを外して確定・保存 (change イベントで保存される)
+    $('rows').addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || e.isComposing || e.keyCode === 229) return;
+      if (e.target.closest('tr.editing') || !e.target.matches('[data-f]')) return;   // 編集中の行は下の「登録」処理に任せる
+      e.preventDefault(); e.stopPropagation();
+      e.target.blur();
     });
 
     // 追加・編集中は、フォーカスがどこにあっても Ctrl+Enter で登録 (備考欄などの複数行入力中も可)
@@ -1037,6 +1099,8 @@
       if (f === 'status') setStatus(t, e.target.value);
       else if (f === 'effort') { t.effort = e.target.value === '' ? '' : Math.max(0, Number(e.target.value)); liveEffort.delete(t.id); updateCount(); }
       else t[f] = e.target.value;
+      t.updatedAt = Date.now();
+      e.target.closest('tr').querySelector('.newbadge')?.remove();
       save();
       if (f === 'status' && editingId !== t.id) render(); // フィルタ・残日数・完了表示に反映
     });
