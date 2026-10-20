@@ -75,6 +75,7 @@
   .linkedit .ladd { align-self:flex-start; }
   .moreRows { padding:12px; text-align:center; color:var(--muted); font-size:13px; border-top:1px solid var(--line); }
   .moreRows button { margin-left:6px; }
+  .newbadge { display:inline-block; margin-right:6px; padding:0 6px; border-radius:8px; background:var(--danger); color:#fff; font-size:10px; font-weight:700; line-height:16px; vertical-align:1px; letter-spacing:.5px; }
   button.toggle.active { border-color:var(--warn); color:var(--warn); }
   button.star { border:0; background:transparent; font-size:16px; line-height:1; padding:2px 4px; filter:grayscale(1); opacity:.35; }
   button.star:hover { filter:none; opacity:.8; }
@@ -280,6 +281,16 @@
     return due ? Math.round((due - today()) / 86400000) : null;
   };
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  // 作成日時 (ミリ秒)。createdAt が無い古いデータは、id (先頭8桁が作成時刻の36進数) から復元する。復元できなければ null
+  const realTs = t => {
+    if (Number.isFinite(t.createdAt)) return t.createdAt;
+    const ms = parseInt(String(t.id || '').slice(0, 8), 36);
+    return /^[0-9a-z]{13}$/.test(t.id || '') && ms > 1.5e12 && ms < 4.1e12 ? ms : null;
+  };
+  const createdTs = t => realTs(t) ?? (parseDate(t.created)?.getTime() ?? 0);
+  const NEW_HOURS = 24;                       // 作成から この時間内は「NEW」を表示
+  const isNew = t => { const ts = realTs(t); return ts !== null && Date.now() - ts < NEW_HOURS * 3600e3; };
+  const fmtTs = ms => { const d = new Date(ms); return `${localISO(d)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 
   // ---------- ファイル入出力 ----------
   const setState = (msg, cls) => { const e = $('saveState'); e.textContent = msg; e.style.color = cls === 'err' ? 'var(--danger)' : cls === 'ok' ? 'var(--ok)' : 'var(--muted)'; };
@@ -503,6 +514,7 @@
         case 'remain': return t.status === '完了' ? null : remainDays(t);
         case 'pinned': return t.pinned ? 0 : 1;
         case 'name': return t.name || '';
+        case 'created': return t.created ? `${t.created} ${String(createdTs(t)).padStart(15, '0')}` : null; // 同じ日付内は作成時刻順
         default: return t[sort.k] || null;
       }
     };
@@ -606,9 +618,9 @@
   const COLS = {
     pin:       { label: '📌', sort: 'pinned', w: 44, view: pinCell, edit: pinCell },
     created:   { label: '起票日', sort: 'created', w: 130,
-                 view: t => `<td>${esc(t.created)}</td>`, edit: t => dateEdit('e_created', t.created) },
+                 view: t => `<td${realTs(t) !== null ? ` title="作成: ${fmtTs(realTs(t))}"` : ''}>${esc(t.created)}</td>`, edit: t => dateEdit('e_created', t.created) },
     name:      { label: 'タスク名', sort: 'name', w: 200,
-                 view: t => `<td class="name">${esc(t.name) || '<span style="color:var(--muted)">(無題)</span>'}</td>`,
+                 view: t => `<td class="name">${isNew(t) ? '<span class="newbadge" title="作成から24時間以内">NEW</span>' : ''}${esc(t.name) || '<span style="color:var(--muted)">(無題)</span>'}</td>`,
                  edit: t => `<td class="name"><input type="text" id="e_name" value="${esc(t.name)}" placeholder="タスク名"></td>` },
     start:     { label: '着手日', sort: 'start', w: 130,
                  view: t => `<td>${t.start ? esc(t.start) : '<button data-a="start">着手開始</button>'}</td>`, edit: t => dateEdit('e_start', t.start) },
@@ -1004,10 +1016,17 @@
 
     // 編集中の行で Enter → 保存 (日本語入力の変換確定中は除く / 備考の改行は Shift+Enter ではなく通常のまま)
     $('rows').addEventListener('keydown', e => {
-      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey) return; // Ctrl+Enter は下の全体ハンドラで処理
       if (!e.target.matches('tr.editing input')) return;
       e.preventDefault();
       e.target.closest('tr').querySelector('button[data-a="ok"]').click();
+    });
+
+    // 追加・編集中は、フォーカスがどこにあっても Ctrl+Enter で登録 (備考欄などの複数行入力中も可)
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || e.isComposing || e.keyCode === 229 || !editingId) return;
+      const ok = $('rows').querySelector('tr.editing button[data-a="ok"]'); if (!ok) return;
+      e.preventDefault(); ok.click();
     });
 
     // 備考・ステータスは常時編集 (編集中でもその場で反映)
@@ -1028,7 +1047,7 @@
 
     $('btnAdd').onclick = () => {
       if (newId) tasks = tasks.filter(x => x.id !== newId); // 未確定の前回分は破棄
-      const t = { id: uid(), name: '', created: localISO(today()), start: '', due: '', priority: '中', status: '未着手', links: [], note: '' };
+      const t = { id: uid(), createdAt: Date.now(), name: '', created: localISO(today()), start: '', due: '', priority: '中', status: '未着手', links: [], note: '' };
       // 新規行が絞り込みで消えないよう、フィルタを解除
       $('btnClear').click();
       tasks.push(t); editingId = newId = t.id; render();
