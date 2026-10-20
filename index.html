@@ -85,6 +85,9 @@
   .colrow { display:inline-flex; align-items:center; gap:2px; margin:2px 14px 2px 0; }
   .colrow label { display:inline-flex; align-items:center; gap:4px; min-width:130px; }
   #colList { display:flex; flex-wrap:wrap; }
+  tr.locked td { opacity:.6; }
+  .lockinfo { cursor:pointer; color:var(--warn); font-size:12px; white-space:normal; }
+  .watch { font-size:11px; color:var(--muted); }
   .chip.hold { color:var(--muted); border-color:var(--muted); }
   .remain.hold { color:var(--muted); font-weight:400; }
   tr.hold td { color:var(--muted); }
@@ -159,6 +162,7 @@
     <button id="btnRedo" title="やり直す (Ctrl+Y)" disabled>↷ やり直す</button>
   </span>
   <span id="saveState"></span>
+  <span id="watchState" class="watch" title="他の人の変更を確認している状態です"></span>
 </header>
 
 <main>
@@ -195,6 +199,7 @@
           <button id="btnPresetSave">現在の条件を保存…</button>
           <button id="btnPresetDel" class="danger">選択中の条件を削除</button>
           <button id="btnCols">表示項目の設定…</button>
+          <button id="btnUser">ユーザー名の変更…</button>
           <button id="btnColReset" title="見出しのドラッグで列の移動、境界のドラッグで列幅を変更できます">列の並び・幅を初期化</button>
         </div>
       </details>
@@ -310,23 +315,140 @@
     }
   }
 
-  async function loadFile() {
-    let f, text;
-    await retry(async () => { f = await handle.getFile(); text = await f.text(); });
-    lastModified = f.lastModified;
-    if (!text.trim()) { tasks = []; presets = []; return; }
+  // ---------- 複数人での同時利用 (チェックアウト / 取り込み / マージ) ----------
+  const CID = (() => {   // この画面(タブ)の識別子。再読み込みしても同じ値を使う
+    const mk = () => Math.random().toString(36).slice(2, 10);
+    try { let c = sessionStorage.getItem('taskCid'); if (!c) { c = mk(); sessionStorage.setItem('taskCid', c); } return c; } catch { return mk(); }
+  })();
+  const LOCK_MS = 5 * 60 * 1000;     // 編集ロックの有効時間 (編集中は1分ごとに延長される)
+  let locks = {};                    // { タスクID: { cid, by, at, until } } 編集中の目印。until を過ぎたら無効
+  let deleted = {};                  // { タスクID: 削除時刻 } 他の人の画面からも確実に消すための記録
+  let presetsDirty = false, pendingRender = false, checking = false;
+  let userNameMem = '';               // localStorage が使えない場合の代わり
+  const getUser = () => { try { return localStorage.getItem('taskUserName') || userNameMem; } catch { return userNameMem; } };
+  function ensureUserName() {
+    let n = getUser();
+    if (!n) {
+      n = (prompt('あなたの名前を入力してください(編集中、他の人に「◯◯さんが編集中」と表示されます)', '') || '').trim() || ('ユーザー' + CID.slice(0, 3));
+      userNameMem = n;
+      try { localStorage.setItem('taskUserName', n); } catch {}
+    }
+    return n;
+  }
+  const lockOf = id => { const l = locks[id]; return l && l.until > Date.now() ? l : null; };
+  const lockedByOther = id => { const l = lockOf(id); return l && l.cid !== CID ? l : null; };
+  const modTs = t => t.modAt || t.updatedAt || realTs(t) || 0;
+  // 項目ごとの更新時刻 (fmod) を記録する。変えた項目だけを渡す (マージ時、項目ごとに新しいほうを採用するため)
+  const META = new Set(['id', 'modAt', 'fmod', 'createdAt']);
+  const touchFields = (t, ...fs) => { const n = Date.now(); t.modAt = n; t.fmod = t.fmod || {}; fs.forEach(f => { t.fmod[f] = n; }); };
+  const canon = v => JSON.stringify(v, (k, x) => x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map(i => [i, x[i]])) : x);   // キー順に依存しない比較用
+  const ftime = (t, k) => t.fmod && k in t.fmod ? t.fmod[k] : (t.fmod ? 0 : modTs(t));
+  // 同じタスクを両方が変更していた場合: 項目ごとに、更新時刻の新しいほうの値を採用する
+  function mergeTask(l, r) {
+    const out = { id: l.id };
+    for (const k of new Set([...Object.keys(l), ...Object.keys(r)])) {
+      if (META.has(k)) continue;
+      if (k === 'updatedBy') { const v = (l.updatedAt || 0) > (r.updatedAt || 0) ? l.updatedBy : r.updatedBy; if (v !== undefined) out.updatedBy = v; continue; }
+      if (k === 'updatedAt') { const m = Math.max(l.updatedAt || 0, r.updatedAt || 0); if (m) out.updatedAt = m; continue; }
+      const pick = ftime(l, k) > ftime(r, k) ? l : r;                  // 同時刻なら取り込んだ側 (r) を優先
+      if (k in pick) out[k] = pick[k];
+    }
+    const ca = l.createdAt ?? r.createdAt; if (ca !== undefined) out.createdAt = ca;
+    const fm = {}; for (const t of [l, r]) for (const [k, v] of Object.entries(t.fmod || {})) fm[k] = Math.max(fm[k] || 0, v);
+    if (Object.keys(fm).length) out.fmod = fm;
+    const m = Math.max(l.modAt || 0, r.modAt || 0); if (m) out.modAt = m;
+    const c = canon(out);
+    return c === canon(r) ? r : c === canon(l) ? l : out;
+  }
+  const hasLocal = k => { try { return localStorage.getItem(k) !== null; } catch { return false; } };
+
+  function parseData(text) {
     const data = JSON.parse(text);
-    tasks = Array.isArray(data) ? data : (data.tasks || []);
-    // 旧形式 (link: 文字列) → links: 配列 へ移行
-    // 文字列だけのリンクは { url, title(別名) } 形式へ
-    tasks.forEach(t => {
+    const obj = !Array.isArray(data);
+    const arr = obj ? (data.tasks || []) : data;
+    // 旧形式 (link: 文字列) → links: [{ url, title(別名) }] へ移行
+    arr.forEach(t => {
       if (!Array.isArray(t.links)) t.links = t.link ? [t.link] : [];
       t.links = t.links.map(l => typeof l === 'string' ? { url: l, title: '' } : { url: l.url || '', title: l.title || '' });
       delete t.link;
     });
-    presets = (!Array.isArray(data) && data.presets) || [];
-    if (!Array.isArray(data) && data.settings) { applySettings(data.settings); paintPin(); renderColPanel(); }
+    return { tasks: arr, presets: (obj && data.presets) || [], settings: obj ? data.settings : null, locks: (obj && data.locks) || {}, deleted: (obj && data.deleted) || {} };
   }
+
+  async function loadFile() {
+    let f, text;
+    await retry(async () => { f = await handle.getFile(); text = await f.text(); });
+    lastModified = f.lastModified;
+    if (!text.trim()) { tasks = []; presets = []; locks = {}; deleted = {}; return; }
+    const d = parseData(text);
+    tasks = d.tasks; presets = d.presets; locks = d.locks; deleted = d.deleted;
+    // 表示設定は、このブラウザに保存済みならそちらを優先 (人によって見た目が違ってよい)。無ければファイルの設定を使う
+    if (d.settings && !hasLocal('taskColOrder2')) { applySettings(d.settings); paintPin(); renderColPanel(); }
+  }
+
+  // 他の人が保存した内容を、自分の内容にマージする (タスク単位で、modAt の新しいほうを採用)
+  function mergeRemote(d) {
+    const before = canon(tasks);
+    for (const [id, at] of Object.entries(d.deleted)) if (!(deleted[id] >= at)) deleted[id] = at;
+    for (const [id, l] of Object.entries(d.locks)) if (!locks[id] || locks[id].at < l.at) locks[id] = l;
+    const local = new Map(tasks.map(t => [t.id, t])), remote = new Map(d.tasks.map(t => [t.id, t]));
+    const out = [];
+    for (const [id, r] of remote) {
+      const l = local.get(id);
+      if (id === editingId && l) { out.push(l); continue; }               // 自分が編集中の行は、取り込みで書き換えない
+      if (deleted[id] >= modTs(r)) continue;                              // 削除済み (削除後に更新されたものは残す)
+      out.push(l ? mergeTask(l, r) : r);
+    }
+    for (const [id, l] of local) {
+      if (remote.has(id)) continue;
+      if (deleted[id] >= modTs(l)) continue;                              // 他の人が削除した
+      out.push(l);                                                        // 自分だけが持つもの (未保存の変更・追加など)
+    }
+    tasks = out;
+    if (!presetsDirty) presets = d.presets;
+    else for (const p of d.presets) if (!presets.some(x => x.name === p.name)) presets.push(p);
+    const mine = canon(tasks);
+    return {
+      pulled: mine !== before,
+      needsWrite: mine !== canon(d.tasks) || canon(locks) !== canon(d.locks) || canon(deleted) !== canon(d.deleted),   // 内容が同じなら書き戻さない (互いに書き合い続けるのを防ぐ)
+    };
+  }
+
+  // ファイルが他の人に更新されていたら、取り込んでマージする
+  async function pullRemote() {
+    const f = await handle.getFile();
+    if (f.lastModified === lastModified) return null;
+    const text = await f.text();
+    if (!text.trim()) { lastModified = f.lastModified; return null; }
+    const res = mergeRemote(parseData(text));
+    lastModified = f.lastModified;
+    if (res.pulled) { resetHistory(); onRemoteMerged(); }
+    return res;
+  }
+  // 他の人の「編集中」の状況 (誰がどのタスクを編集中か)。変わったら画面を更新する。時間切れで解除された場合も検知する
+  let lastLockSig = '';
+  const lockSig = () => Object.keys(locks).filter(id => lockedByOther(id)).map(id => id + ':' + locks[id].by).sort().join('|');
+  function onRemoteMerged(quiet) {
+    if (!quiet) setState('他の人の更新を取り込みました ' + new Date().toLocaleTimeString(), 'ok');
+    const a = document.activeElement;
+    const typing = editingId || (a && a.matches && a.matches('#rows input, #rows textarea, #rows select'));
+    if (typing) pendingRender = true;            // 入力中は画面を描き直さず、終わってから反映
+    else { renderPresets($('fPreset').value); render(); }
+  }
+
+  async function acquireLock(id) {
+    ensureUserName();
+    try { await saving; await pullRemote(); } catch (e) { console.warn(e); }
+    if (!tasks.some(x => x.id === id)) { alert('このタスクは、他の人によって削除されました'); render(); return false; }
+    const o = lockedByOther(id);
+    if (o) { alert(`${o.by} さんが編集中です(${fmtTs(o.at)} から)。\nしばらくしてから、もう一度お試しください。`); render(); return false; }
+    locks[id] = { cid: CID, by: getUser(), at: Date.now(), until: Date.now() + LOCK_MS };
+    save();
+    return true;
+  }
+  function releaseLock(id) { const l = locks[id]; if (l && l.cid === CID) locks[id] = { cid: CID, by: l.by, at: Math.max(Date.now(), l.at + 1), until: 0 }; }
+  function pruneLocks() { const old = Date.now() - 864e5; for (const id of Object.keys(locks)) if (Math.max(locks[id].at, locks[id].until) < old) delete locks[id]; return locks; }   // 解除の記録 (until=0) も1日は残す
+  function pruneDeleted() { const old = Date.now() - 30 * 864e5; for (const id of Object.keys(deleted)) if (deleted[id] < old) delete deleted[id]; return deleted; }
 
   // ---------- 元に戻す / やり直す ----------
   const snapshot = () => JSON.stringify(tasks.filter(x => x.id !== newId)); // 未確定の新規行は含めない
@@ -345,8 +467,17 @@
   function restore(from, to, verb) {
     const e = from.pop(); if (!e) return;
     to.push({ label: e.label, snap: snapshot() });
+    const prev = new Map(tasks.map(t => [t.id, t]));
     tasks = JSON.parse(e.snap);
+    if (editingId) releaseLock(editingId);
     editingId = newId = null;
+    const now = Date.now(), ids = new Set(tasks.map(t => t.id));
+    tasks.forEach(t => {
+      const p = prev.get(t.id); if (!p) { t.modAt = now; return; }
+      const ch = [...new Set([...Object.keys(t), ...Object.keys(p)])].filter(k => !META.has(k) && canon(t[k]) !== canon(p[k]));
+      if (ch.length) { t.fmod = { ...(t.fmod || {}) }; ch.forEach(k => { t.fmod[k] = now; }); t.modAt = now; }
+    });
+    prev.forEach((_, id) => { if (!ids.has(id)) deleted[id] = now; });
     save(); render(); updateHistoryButtons();
     setState(`${verb}しました（${e.label}）`, 'ok');
   }
@@ -355,7 +486,7 @@
 
   // ステータス変更 (完了日の自動記録)
   function setStatus(t, v) {
-    t.status = v; t.updatedAt = Date.now();
+    t.status = v; t.updatedAt = Date.now(); t.updatedBy = ensureUserName(); touchFields(t, 'status', 'completed');
     if (v === '完了') { if (!t.completed) t.completed = localISO(today()); }
     else delete t.completed;
   }
@@ -366,10 +497,12 @@
       try {
         // OneDrive の同期などでファイルが書込み中に変化すると InvalidStateError になるため、再試行する
         await retry(async () => {
+          await pullRemote();   // 書き込む直前に最新を取り込み、他の人の変更を上書きしない
           const w = await handle.createWritable();
-          await w.write(JSON.stringify({ version: 1, tasks: tasks.filter(x => x.id !== newId), presets, settings: layoutSettings() }, null, 2));
+          await w.write(JSON.stringify({ version: 2, tasks: tasks.filter(x => x.id !== newId), presets, settings: layoutSettings(), locks: pruneLocks(), deleted: pruneDeleted() }, null, 2));
           await w.close();
         });
+        presetsDirty = false;
         try { lastModified = (await handle.getFile()).lastModified; } catch { /* 保存自体は成功 */ }
         setState('保存しました ' + new Date().toLocaleTimeString(), 'ok');
       } catch (e) {
@@ -390,7 +523,7 @@
   async function useHandle(h, isNew) {
     handle = h;
     await idb.set('handle', h);
-    editingId = newId = null; resetHistory();
+    editingId = newId = null; resetHistory(); locks = {}; deleted = {};
     if (isNew) { tasks = []; presets = []; await save(); } else { await loadFile(); }
     showApp();
   }
@@ -443,33 +576,37 @@
   }
   // ---------- 詳細条件 (項目 × 演算子 × 値 を AND / OR で組み合わせ) ----------
   const toPairs = a => a.map(v => [v, v]);
+  // 項目の並びは、一覧の列の並び (起票日 → 起票者 → タスク名 → …) に合わせる
   const FIELD_DEFS = {
     all:       { label: '全テキスト', type: 'text' },
-    name:      { label: 'タスク名', type: 'text' },
-    note:      { label: '備考', type: 'text' },
-    link:      { label: 'リンク(別名・URL)', type: 'text' },
-    status:    { label: 'ステータス', type: 'enum', options: toPairs(STATUSES) },
-    priority:  { label: '優先度', type: 'enum', options: toPairs(PRIORITIES) },
-    dueRel:    { label: '期日の状態', type: 'enum', options: DUE_RELS },
-    pinned:    { label: 'ピン留め', type: 'enum', options: [['yes', 'ピンあり'], ['no', 'ピンなし']] },
-    due:       { label: '期日', type: 'date' },
-    start:     { label: '着手日', type: 'date' },
     created:   { label: '起票日', type: 'date' },
-    completed: { label: '完了日', type: 'date' },
+    creator:   { label: '起票者', type: 'text' },
+    name:      { label: 'タスク名', type: 'text' },
+    start:     { label: '着手日', type: 'date' },
+    due:       { label: '期日', type: 'date' },
+    dueRel:    { label: '期日の状態', type: 'enum', options: DUE_RELS },
     effort:    { label: '工数(h)', type: 'num' },
+    priority:  { label: '優先度', type: 'enum', options: toPairs(PRIORITIES) },
+    status:    { label: 'ステータス', type: 'enum', options: toPairs(STATUSES) },
     remain:    { label: '残日数', type: 'num' },
+    completed: { label: '完了日', type: 'date' },
+    link:      { label: 'リンク(別名・URL)', type: 'text' },
+    note:      { label: '備考', type: 'text' },
+    updatedBy: { label: '最終更新者', type: 'text' },
+    pinned:    { label: 'ピン留め', type: 'bool' },
   };
   const OPS = {
     text: [['has', 'を含む'], ['not', 'を含まない'], ['eq', 'と一致']],
     enum: [['is', 'である'], ['isnot', 'でない']],
+    bool: [['yes', 'である'], ['no', 'でない']],      // 「ピン留め である / でない」(値の入力は不要)
     date: [['on', 'と同じ'], ['before', '以前'], ['after', '以降'], ['empty', 'が未設定'], ['set', 'が設定済み']],
     num:  [['gte', '以上'], ['lte', '以下'], ['eq', 'と等しい'], ['empty', 'が未設定']],
   };
   const textOf = (t, f) => {
     const links = (t.links || []).map(l => `${l.title} ${l.url}`).join(' ');
-    return f === 'name' ? (t.name || '') : f === 'note' ? (t.note || '') : f === 'link' ? links : `${t.name || ''} ${t.note || ''} ${links}`;
+    return f === 'name' ? (t.name || '') : f === 'note' ? (t.note || '') : f === 'creator' ? (t.creator || '') : f === 'updatedBy' ? (t.updatedBy || '') : f === 'link' ? links : `${t.name || ''} ${t.creator || ''} ${t.updatedBy || ''} ${t.note || ''} ${links}`;
   };
-  const needsValue = c => c.op !== 'empty' && c.op !== 'set';
+  const needsValue = c => c.op !== 'empty' && c.op !== 'set' && !(FIELD_DEFS[c.field] && FIELD_DEFS[c.field].type === 'bool');
   const condReady = c => !!FIELD_DEFS[c.field] && (!needsValue(c) || String(c.value ?? '') !== '');
   function matchCond(t, c) {
     const d = FIELD_DEFS[c.field], v = c.value;
@@ -477,8 +614,12 @@
       const hay = textOf(t, c.field).toLowerCase(), q = String(v).toLowerCase();
       return c.op === 'not' ? !hay.includes(q) : c.op === 'eq' ? hay === q : hay.includes(q);
     }
+    if (d.type === 'bool') {   // ピン留め (旧形式の「である + ピンあり」も解釈する)
+      const yes = c.op === 'yes' || (c.op === 'is' && v === 'yes') || (c.op === 'isnot' && v === 'no');
+      return !!t.pinned === yes;
+    }
     if (d.type === 'enum') {
-      const m = c.field === 'dueRel' ? matchDueRel(t, v) : c.field === 'pinned' ? !!t.pinned === (v === 'yes') : t[c.field] === v;
+      const m = c.field === 'dueRel' ? matchDueRel(t, v) : t[c.field] === v;
       return c.op === 'isnot' ? !m : m;
     }
     if (d.type === 'date') {
@@ -630,6 +771,9 @@
     pin:       { label: '📌', sort: 'pinned', w: 44, view: pinCell, edit: pinCell },
     created:   { label: '起票日', sort: 'created', w: 130,
                  view: t => `<td${realTs(t) !== null ? ` title="作成: ${fmtTs(realTs(t))}"` : ''}>${esc(t.created)}</td>`, edit: t => dateEdit('e_created', t.created) },
+    creator:   { label: '起票者', sort: 'creator', w: 100,
+                 view: t => `<td>${esc(t.creator || '')}</td>`,
+                 edit: t => `<td><input type="text" id="e_creator" value="${esc(t.creator || '')}" placeholder="起票者"></td>` },
     name:      { label: 'タスク名', sort: 'name', w: 200,
                  view: t => `<td class="name">${isNew(t) ? '<span class="newbadge" title="本日追加(未更新)">NEW</span>' : ''}${esc(t.name) || '<span style="color:var(--muted)">(無題)</span>'}</td>`,
                  edit: t => `<td class="name"><input type="text" id="e_name" value="${esc(t.name)}" placeholder="タスク名"></td>` },
@@ -646,9 +790,10 @@
                  view: t => `<td>${statusSel(t)}</td>`, edit: t => `<td>${statusSel(t)}</td>` },
     remain:    { label: '残日数', sort: 'remain', w: 90, view: remainCell, edit: remainCell },
     completed: { label: '完了日', sort: 'completed', w: 110, view: completedCell, edit: completedCell },
-    link:      { label: 'リンク', w: 56, view: linkCell,
+    link:     { label: 'リンク', w: 56, view: linkCell,
                  edit: linkEdit },
     note:      { label: '備考', w: 360, view: noteCell, edit: noteCell }, // 幅は画面の余りを吸収 (最低160px)
+    updater:   { label: '最終更新者', sort: 'updatedBy', w: 100, view: t => `<td>${esc(t.updatedBy || '')}</td>`, edit: t => `<td>${esc(t.updatedBy || '')}</td>` },
     act:       { label: '', w: 130, // 常に右端に固定
                  view: () => '<td class="act"><button data-a="edit">編集</button> <button class="danger" data-a="del">削除</button></td>',
                  edit: () => '<td class="act"><button class="primary" data-a="ok">保存</button> <button data-a="cancel">取消</button></td>' },
@@ -657,8 +802,14 @@
   const readJSON = key => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } };
   const normOrder = a => {
     const known = (Array.isArray(a) ? a : []).filter(k => k in COLS && k !== 'act');
-    const missing = DEFAULT_ORDER.filter(k => k !== 'act' && !known.includes(k));
-    return [...missing.filter(k => k === 'pin'), ...known, ...missing.filter(k => k !== 'pin'), 'act'];
+    if (!known.length) return DEFAULT_ORDER.slice();
+    const order = [...known, 'act'];
+    DEFAULT_ORDER.forEach((k, i) => {                    // 新しく増えた列は、既定の並びで直前にある列の右に出す
+      if (order.includes(k)) return;
+      let j = i - 1; while (j >= 0 && !order.includes(DEFAULT_ORDER[j])) j--;
+      order.splice(j < 0 ? 0 : order.indexOf(DEFAULT_ORDER[j]) + 1, 0, k);
+    });
+    return order;
   };
   const normHidden = a => new Set((Array.isArray(a) ? a : []).filter(k => k in COLS && k !== 'name' && k !== 'act')); // タスク名と操作列は常に表示
   const defaultW = () => Object.fromEntries(DEFAULT_ORDER.map(k => [k, COLS[k].w]));
@@ -688,8 +839,13 @@
     if (t.id === editingId) return `<tr class="editing" data-id="${t.id}">${visCols().map(k => COLS[k].edit(t)).join('')}</tr>`;
     const r = remainDays(t);
     const cls = t.status === '完了' ? 'done' : t.status === '保留' ? 'hold' : r === null ? '' : r < 0 ? 'overdue' : r === 0 ? 'today' : '';
-    const rowCls = cls + (t.pinned ? ' pinned' : '');
-    return `<tr class="${rowCls}" data-id="${t.id}">${visCols().map(k => COLS[k].view(t)).join('')}</tr>`;
+    const lk = lockedByOther(t.id);
+    const rowCls = cls + (t.pinned ? ' pinned' : '') + (lk ? ' locked' : '');
+    let cells = visCols().map(k => k === 'act' && lk
+      ? `<td class="act"><span class="lockinfo" data-unlock="${t.id}" title="クリックで強制解除 (相手がいないときだけ)">🔒 ${esc(lk.by)}さんが編集中</span></td>`
+      : COLS[k].view(t)).join('');
+    if (lk) cells = cells.replace(/<(select|textarea|input)\b/g, '<$1 disabled').replace(/<button( type="button" class="star| data-a="start")/g, '<button disabled$1');
+    return `<tr class="${rowCls}" data-id="${t.id}">${cells}</tr>`;
   }
 
   function renderHead() {
@@ -787,6 +943,7 @@
   const PAGE_SIZE = 200;
   let limit = PAGE_SIZE, lastSig = '';
   function render() {
+    pendingRender = false;
     closeLinkMenu();
     renderHead();
     applyWidths();
@@ -898,6 +1055,14 @@
       saveLayout(); paintPin(); render();
     };
 
+    // 編集中の表示に使うユーザー名
+    $('btnUser').onclick = () => {
+      const n = (prompt('名前を入力してください(他の人に「◯◯さんが編集中」と表示されます)', getUser()) || '').trim();
+      if (!n) return;
+      userNameMem = n; try { localStorage.setItem('taskUserName', n); } catch {}
+      setState('名前を「' + n + '」に変更しました', 'ok');
+    };
+
     // 表示項目の設定
     $('btnCols').onclick = () => { renderColPanel(); $('colPanel').hidden = false; };
     $('btnColClose').onclick = () => { $('colPanel').hidden = true; };
@@ -949,14 +1114,14 @@
       const i = presets.findIndex(p => p.name === name);
       if (i >= 0) { if (!confirm(`「${name}」は既にあります。上書きしますか？`)) return; presets[i] = entry; }
       else presets.push(entry);
-      save(); renderPresets(name);
+      presetsDirty = true; save(); renderPresets(name);
     };
     $('btnPresetDel').onclick = () => {
       const name = $('fPreset').value;
       if (!name) return alert('削除する条件を「保存した条件」から選んでください');
       if (!confirm(`条件「${name}」を削除しますか？`)) return;
       presets = presets.filter(p => p.name !== name);
-      save(); renderPresets();
+      presetsDirty = true; save(); renderPresets();
     };
   }
 
@@ -1009,14 +1174,18 @@
       render();
     });
 
-    $('rows').addEventListener('click', e => {
+    $('rows').addEventListener('click', async e => {
       const btn = e.target.closest('button[data-a]'); if (!btn) return;
       const tr = btn.closest('tr'); const t = tasks.find(x => x.id === tr.dataset.id); if (!t) return;
+      if (['pin', 'start', 'del'].includes(btn.dataset.a)) {
+        const o = lockedByOther(t.id); if (o) { alert(`${o.by} さんが編集中です`); return; }
+      }
       switch (btn.dataset.a) {
-        case 'edit': editingId = t.id; render(); break;
+        case 'edit': if (!(await acquireLock(t.id))) return; editingId = t.id; render(); break;
         case 'pin':
           pushUndo(t.pinned ? 'ピン留め解除' : 'ピン留め');
           if (t.pinned) delete t.pinned; else t.pinned = true;
+          touchFields(t, 'pinned');
           save(); render(); break;
         case 'links': showLinkMenu(btn, t); break;
         case 'ladd': {
@@ -1031,6 +1200,7 @@
         }
         case 'cancel':
           if (t.id === newId) tasks = tasks.filter(x => x !== t); // 追加直後の未確定レコードは破棄
+          else { releaseLock(t.id); save(); }                      // 編集を終えたのでロックを解除
           editingId = null; newId = null; render(); break;
         case 'start':
           if (confirm(`「${t.name || '(無題)'}」に着手しますか？\n着手日を本日にし、ステータスを「進行中」にします。`)) {
@@ -1056,14 +1226,20 @@
             if (!isLinkable(url)) { alert('リンクは http(s):// のURL、またはローカルのパス(C:\\... / \\\\server\\...)のみ登録できます: ' + url); row.querySelector('.l-url').focus(); return; }
             if (!seen.has(url)) { seen.add(url); links.push({ title, url }); }
           }
+          const other = lockedByOther(t.id);
+          if (other && !confirm(`${other.by} さんが、このタスクの編集を始めています。\nこのまま保存すると、相手の変更を上書きする可能性があります。保存しますか？`)) return;
           pushUndo(t.id === newId ? '追加' : '編集');
-          Object.assign(t, { name, created: val('e_created', t.created), start, due, priority: val('e_priority', t.priority), links });
+          const oldVals = { name: t.name, creator: t.creator || '', created: t.created, start: t.start, due: t.due, priority: t.priority, links: canon(t.links || []) };
+          Object.assign(t, { name, creator: val('e_creator', t.creator || '').trim(), created: val('e_created', t.created), start, due, priority: val('e_priority', t.priority), links });
           delete t.link;
-          if (t.id !== newId) t.updatedAt = Date.now();   // 新規の登録は「更新」に数えない
+          if (t.id !== newId) { t.updatedAt = Date.now(); t.updatedBy = ensureUserName(); }   // 新規の登録は「更新」に数えない
+          const changed = Object.keys(oldVals).filter(k => (k === 'links' ? canon(t.links || []) : t[k]) !== oldVals[k]);
+          if (changed.length || t.id === newId) touchFields(t, ...changed);   // 変えた項目だけを記録 (他の人の別項目の変更を残すため)
+          releaseLock(t.id);
           editingId = null; newId = null; save(); render(); break;
         }
         case 'del':
-          if (confirm(`「${t.name || '(無題)'}」を削除しますか？\n(「元に戻す」で復元できます)`)) { pushUndo('削除'); tasks = tasks.filter(x => x !== t); save(); render(); }
+          if (confirm(`「${t.name || '(無題)'}」を削除しますか？\n(「元に戻す」で復元できます)`)) { pushUndo('削除'); deleted[t.id] = Date.now(); tasks = tasks.filter(x => x !== t); save(); render(); }
           break;
       }
     });
@@ -1095,15 +1271,30 @@
     $('rows').addEventListener('change', e => {
       const f = e.target.dataset.f; if (!f) return;
       const t = tasks.find(x => x.id === e.target.closest('tr').dataset.id); if (!t) return;
+      if (lockedByOther(t.id)) { render(); return; }   // 他の人が編集中のタスクは変更できない
       pushUndo({ status: 'ステータス変更', effort: '工数の変更' }[f] || '備考の変更');
       if (f === 'status') setStatus(t, e.target.value);
       else if (f === 'effort') { t.effort = e.target.value === '' ? '' : Math.max(0, Number(e.target.value)); liveEffort.delete(t.id); updateCount(); }
       else t[f] = e.target.value;
-      t.updatedAt = Date.now();
+      t.updatedAt = Date.now(); t.updatedBy = ensureUserName(); touchFields(t, f);
       e.target.closest('tr').querySelector('.newbadge')?.remove();
+      const ui = visCols().indexOf('updater'); if (ui >= 0) e.target.closest('tr').children[ui].textContent = t.updatedBy;   // 最終更新者もその場で更新
       save();
       if (f === 'status' && editingId !== t.id) render(); // フィルタ・残日数・完了表示に反映
     });
+    // 他の人が編集中の行の「🔒」を押すと、ロックを強制解除できる (相手が離席・終了して残ってしまった場合用)
+    $('rows').addEventListener('click', e => {
+      const u = e.target.closest('[data-unlock]'); if (!u) return;
+      const id = u.dataset.unlock, o = lockOf(id); if (!o) return;
+      if (!confirm(`${o.by} さんの編集ロックを強制的に解除しますか？\n(相手が実際に編集中の場合は、変更が上書きされる恐れがあります)`)) return;
+      locks[id] = { cid: CID, by: getUser(), at: Date.now(), until: 0 };
+      save(); render();
+    });
+    // 他の人の更新を取り込んだのに、入力中で描き直しを保留していた場合は、入力が終わった時点で反映
+    $('rows').addEventListener('focusout', () => setTimeout(() => {
+      const a = document.activeElement;
+      if (pendingRender && !editingId && !(a && a.matches && a.matches('#rows input, #rows textarea, #rows select'))) render();
+    }, 0));
     $('rows').addEventListener('input', e => {
       if (e.target.tagName === 'TEXTAREA') autoGrow(e.target.closest('td'));
       if (e.target.dataset.f === 'effort') { liveEffort.set(e.target.closest('tr').dataset.id, e.target.value); updateCount(); }
@@ -1111,7 +1302,7 @@
 
     $('btnAdd').onclick = () => {
       if (newId) tasks = tasks.filter(x => x.id !== newId); // 未確定の前回分は破棄
-      const t = { id: uid(), createdAt: Date.now(), name: '', created: localISO(today()), start: '', due: '', priority: '中', status: '未着手', links: [], note: '' };
+      const t = { id: uid(), createdAt: Date.now(), creator: ensureUserName(), name: '', created: localISO(today()), start: '', due: '', priority: '中', status: '未着手', links: [], note: '' };
       // 新規行が絞り込みで消えないよう、フィルタを解除
       $('btnClear').click();
       tasks.push(t); editingId = newId = t.id; render();
@@ -1120,13 +1311,35 @@
   }
 
   // ---------- 外部更新 (OneDrive 同期) の検知 ----------
+  let checkStarted = 0;
+  function watch(msg, bad) {   // ヘッダーに監視の状態を表示 (動いていない/止まっている場合に気づけるように)
+    const el = $('watchState'); if (!el) return;
+    el.textContent = msg; el.style.color = bad ? 'var(--danger)' : 'var(--muted)';
+  }
   async function checkExternalChange() {
-    if (!handle || $('app').hidden || editingId) return;
+    if (!handle || $('app').hidden) return;
+    if (checking && Date.now() - checkStarted < 15000) return;     // 前回の確認が固まっても、15秒たてば再開する
+    checking = true; checkStarted = Date.now();
     try {
-      if (await handle.queryPermission({ mode: 'readwrite' }) !== 'granted') return;
-      const f = await handle.getFile();
-      if (f.lastModified > lastModified) { await saving; await loadFile(); resetHistory(); renderPresets($('fPreset').value); render(); setState('外部の更新を読み込みました', 'ok'); }
-    } catch (e) { console.warn(e); }
+      if (await handle.queryPermission({ mode: 'readwrite' }) !== 'granted') { watch('⚠ ファイルへのアクセス許可がありません(「ファイル変更」から開き直してください)', true); return; }
+      await saving;
+      const res = await pullRemote();
+      if (res && res.needsWrite) save();     // 自分だけが持つ変更やロックをファイルに反映
+      const sig = lockSig();
+      if (sig !== lastLockSig) { lastLockSig = sig; onRemoteMerged(true); }   // 「◯◯さんが編集中」の表示を、再読み込みなしで更新
+      watch('👁 監視中 ' + new Date().toLocaleTimeString());
+    } catch (e) { console.warn(e); watch('⚠ 監視エラー: ' + e.message, true); }
+    finally { checking = false; }
+  }
+
+  // 定期確認の「時計」。画面が隠れている/他のウィンドウの後ろにある間は、ブラウザが通常のタイマーを大きく遅らせるため、
+  // Worker のタイマーも併用する (どちらが先に動いても、重複して動かないようになっている)
+  function startTicker(fn, ms) {
+    setInterval(fn, ms);
+    try {
+      const w = new Worker(URL.createObjectURL(new Blob(['setInterval(function () { postMessage(0); }, ' + ms + ');'], { type: 'text/javascript' })));
+      w.onmessage = fn;
+    } catch (e) { console.warn('Worker のタイマーは使えません', e); }
   }
 
   // ---------- 起動 ----------
@@ -1144,7 +1357,7 @@
       else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
     });
     $('btnOther').onclick = () => { $('reconnect').hidden = true; showWelcome(); };
-    $('btnChange').onclick = () => { editingId = null; showWelcome(); };
+    $('btnChange').onclick = () => { if (editingId) { releaseLock(editingId); save(); } editingId = null; showWelcome(); };
     $('btnReconnect').onclick = async () => {
       try {
         // ユーザー操作の直後に呼ぶ必要があるため、事前の await を挟まず直接 requestPermission する
@@ -1165,7 +1378,11 @@
     window.addEventListener('resize', () => { if (!$('app').hidden) applyWidths(); });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) checkExternalChange(); });
     window.addEventListener('focus', checkExternalChange);
-    setInterval(checkExternalChange, 30000);
+    startTicker(checkExternalChange, 1000);   // ファイルの更新時刻を1秒おきに確認 (更新時刻を見るだけの軽い処理)
+    setInterval(() => {                         // 編集中は、ロックを1分ごとに延長
+      const l = editingId && locks[editingId];
+      if (l && l.cid === CID) { l.at = Date.now(); l.until = Date.now() + LOCK_MS; save(); }
+    }, 60000);
 
     if (!window.showOpenFilePicker) {
       showWelcome(); $('unsupported').hidden = false; $('btnNew').disabled = $('btnOpen').disabled = true; return;
