@@ -28,9 +28,9 @@
   input, select, textarea { border:1px solid var(--line); background:var(--card); border-radius:5px; padding:4px 6px; }
   input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:-1px; }
 
-  #welcome, #scWelcome { max-width:520px; margin:60px auto; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:28px; text-align:center; }
-  #welcome p, #scWelcome p { color:var(--muted); }
-  #welcome .row, #scWelcome .row { display:flex; gap:10px; justify-content:center; margin-top:16px; }
+  #welcome, #scWelcome, #snNoFile { max-width:520px; margin:60px auto; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:28px; text-align:center; }
+  #welcome p, #scWelcome p, #snNoFile p { color:var(--muted); }
+  #welcome .row, #scWelcome .row, #snNoFile .row { display:flex; gap:10px; justify-content:center; margin-top:16px; }
   [hidden] { display:none !important; }
   .banner { background:#fff7e6; border:1px solid #f5d28a; color:#7a4b00; padding:2px 8px; border-radius:6px; font-size:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
   .banner button { padding:2px 8px; font-size:12px; }
@@ -135,6 +135,54 @@
   .sccard.dragging { opacity:.4; }
   .sccard.dropL { box-shadow:-5px 0 0 var(--accent); }
   .sccard.dropR { box-shadow:5px 0 0 var(--accent); }
+  .segs { display:inline-flex; }
+  .segs button { border-radius:0; padding:5px 12px; }
+  .segs button:first-child { border-radius:6px 0 0 6px; }
+  .segs button:last-child { border-radius:0 6px 6px 0; margin-left:-1px; }
+  .segs button.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  #kanban { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:10px; align-items:start; overflow-x:auto; padding-bottom:8px; }
+  .kcol { background:var(--stripe); border:1px solid var(--line); border-radius:8px; padding:8px; min-height:140px; }
+  .kcol.over { outline:2px dashed var(--accent); outline-offset:-4px; }
+  .khead { display:flex; align-items:center; gap:8px; padding:2px 4px 8px; border-bottom:3px solid var(--c); margin-bottom:8px; }
+  .kcount { background:var(--c); color:#fff; border-radius:10px; padding:0 8px; font-size:12px; font-weight:700; }
+  .kh { color:var(--muted); font-size:11px; margin-left:auto; }
+  .kadd { padding:0 8px; font-size:16px; line-height:1.3; }
+  .kcards { display:flex; flex-direction:column; gap:8px; }
+  .kcard { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--pc); border-radius:6px; padding:8px 10px; cursor:grab; display:flex; flex-direction:column; gap:4px; }
+  .kcard:hover { border-color:var(--accent); border-left-color:var(--pc); }
+  .kcard.pinned { box-shadow:0 0 0 1px var(--warn) inset; }
+  .kcard.overdue { background:rgba(220,38,38,.09); }
+  .kcard.today { background:rgba(217,119,6,.13); }
+  .kcard.done { opacity:.7; }
+  .kcard.dragging { opacity:.4; }
+  .kcard.locked { opacity:.6; cursor:not-allowed; }
+  .ktop { display:flex; gap:6px; align-items:flex-start; }
+  .kname { font-weight:700; flex:1; overflow-wrap:anywhere; }
+  .kbtn { border:0; background:transparent; padding:0 4px; color:var(--muted); }
+  .kbtn:hover { color:var(--accent); }
+  .kpin { filter:grayscale(1); opacity:.35; }
+  .kpin:hover { filter:none; opacity:.8; }
+  .kpin.on { filter:none; opacity:1; }
+  .kmeta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12px; color:var(--muted); }
+  .knote { font-size:12px; color:var(--muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .klock { font-size:11px; color:var(--warn); }
+  .khint { color:var(--muted); font-size:12px; padding:8px; }
+  .kmore { width:100%; font-size:12px; }
+  dialog#taskDlg { border:1px solid var(--line); border-radius:10px; padding:18px 20px; width:min(640px, 94vw); background:var(--card); color:var(--text); }
+  dialog#taskDlg::backdrop { background:rgba(0,0,0,.4); }
+  #taskDlg h3 { margin:0 0 8px; font-size:16px; }
+  .tgrid { display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; }
+  .tgrid .wide { grid-column:1 / -1; }
+  .tgrid label, .tgrid .lbl { display:block; font-size:12px; color:var(--muted); }
+  .tgrid input, .tgrid select, .tgrid textarea { width:100%; margin-top:3px; font-size:14px; }
+  .tgrid .lrow input { margin-top:0; }
+  textarea.scquick { resize:vertical; font-family:inherit; min-height:42px; }
+  .snprev { font-size:12px; color:var(--muted); white-space:pre-wrap; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; background:var(--stripe); border-radius:6px; padding:6px 8px; }
+  dialog#snDlg { border:1px solid var(--line); border-radius:10px; padding:18px 20px; width:min(640px, 94vw); background:var(--card); color:var(--text); }
+  dialog#snDlg::backdrop { background:rgba(0,0,0,.4); }
+  #snDlg h3 { margin:0 0 4px; font-size:16px; }
+  #snDlg label { display:block; font-size:12px; color:var(--muted); margin-top:10px; }
+  #snDlg input, #snDlg textarea { width:100%; margin-top:3px; font-size:14px; }
   .chip.hold { color:var(--muted); border-color:var(--muted); }
   .remain.hold { color:var(--muted); font-weight:400; }
   tr.hold td { color:var(--muted); }
@@ -229,6 +277,7 @@
   <nav class="tabs" id="tabs">
     <button data-tab="tasks" class="on">📋 タスク</button>
     <button data-tab="sc">🔖 ショートカット</button>
+    <button data-tab="sn">💬 定型文</button>
   </nav>
   <div id="tabTasks">
   <div id="welcome" hidden>
@@ -268,6 +317,7 @@
           <button id="btnColReset" title="見出しのドラッグで列の移動、境界のドラッグで列幅を変更できます">列の並び・幅を初期化</button>
         </div>
       </details>
+      <span class="segs" title="表示の切り替え"><button id="vwList" class="on">☰ 一覧</button><button id="vwBoard">▦ カンバン</button></span>
       <span class="count" id="count"></span>
       <button class="primary" id="btnAdd">＋ タスク追加</button>
     </div>
@@ -293,13 +343,15 @@
       <div class="empty" id="empty" hidden>該当するタスクがありません</div>
       <div class="moreRows" id="moreRows" hidden></div>
     </div>
+    <div id="kanban" hidden></div>
+    <dialog id="taskDlg"><div id="taskDlgBody"></div></dialog>
   </div>
   </div><!-- /tabTasks -->
 
   <div id="tabSc" hidden>
     <div id="scWelcome" hidden>
-      <h2>ショートカット用のデータファイルを選択してください</h2>
-      <p>タスクとは別の JSON ファイルに保存されます。<br>一度選ぶと、次回以降は自動で同じファイルを開きます。</p>
+      <h2>ショートカット・定型文用のデータファイルを選択してください</h2>
+      <p>タスクとは別の JSON ファイルに保存されます (ショートカットと定型文は、同じファイルです)。<br>一度選ぶと、次回以降は自動で同じファイルを開きます。</p>
       <div class="row">
         <button class="primary" id="scBtnNew">新規ファイルを作成</button>
         <button id="scBtnOpen">既存ファイルを開く</button>
@@ -327,6 +379,39 @@
       <label>カテゴリ (省略可) <input type="text" id="sfCat" list="scCatList" placeholder="例: 経理"></label>
       <datalist id="scCatList"></datalist>
       <div class="dlgbtns"><button type="button" id="sfCancel">取消</button><button type="button" class="primary" id="sfOk">保存</button></div>
+    </dialog>
+  </div>
+  <div id="tabSn" hidden>
+    <div id="snNoFile" hidden>
+      <h2>ショートカット・定型文用のデータファイルを選択してください</h2>
+      <p>ショートカットと定型文は、同じ JSON ファイルに保存されます。<br>一度選ぶと、次回以降は自動で同じファイルを開きます。</p>
+      <div class="row">
+        <button class="primary" id="snBtnNew">新規ファイルを作成</button>
+        <button id="snBtnOpen">既存ファイルを開く</button>
+      </div>
+    </div>
+    <div id="snMain" hidden>
+      <div class="scbar">
+        <textarea id="snQuick" class="scquick" rows="1" placeholder="＋ 定型文をここに貼り付けて Enter で追加 (改行は Shift+Enter)"></textarea>
+        <button id="snBtnAdd">詳しく入力して追加</button>
+      </div>
+      <div class="scbar2">
+        <input type="search" id="snSearch" placeholder="🔍 検索 (Enter で先頭をコピー / 「/」で移動)" style="width:320px">
+        <select id="snSort" title="並び順"><option value="added">手動 (ドラッグで並べ替え)</option><option value="name">名前順</option><option value="recent">最近使った順</option></select>
+        <div id="snCats" class="scchips"></div>
+        <span class="count" id="snCount"></span>
+      </div>
+      <div id="snBoard"></div>
+      <div class="empty" id="snEmpty" hidden></div>
+    </div>
+    <dialog id="snDlg">
+      <h3 id="snDlgTitle">定型文を追加</h3>
+      <label>見出し (空欄なら、本文の1行目から付けます) <input type="text" id="snfTitle"></label>
+      <label>本文 <textarea id="snfText" rows="10"></textarea></label>
+      <div class="hint" style="margin-top:4px">コピーするとき、{{今日}} {{曜日}} {{時刻}} {{名前}} は自動で置き換わります。{{?相手の名前}} のように「?」を付けると、入力を求めます。</div>
+      <label>カテゴリ (省略可) <input type="text" id="snfCat" list="snCatList" placeholder="例: 問い合わせ"></label>
+      <datalist id="snCatList"></datalist>
+      <div class="dlgbtns"><button type="button" id="snfCancel">取消</button><button type="button" class="primary" id="snfOk">保存</button></div>
     </dialog>
   </div>
 </main>
@@ -476,7 +561,7 @@
   }
 
   // ---------- 選んだ JSON ファイルの確認 (間違えて別のファイルを開いて、壊してしまうのを防ぐ) ----------
-  const KIND_LABEL = { tasks: 'タスク', shortcuts: 'ショートカット' };
+  const KIND_LABEL = { tasks: 'タスク', shortcuts: 'ショートカット・定型文' };
   function checkDataText(text, kind) {   // kind: 'tasks' | 'shortcuts'
     if (!text.trim()) return { ok: true, empty: true };
     let d;
@@ -681,15 +766,18 @@
 
   // ---------- 画面切替 ----------
   function showWelcome() {
+    setTimeout(refreshReconnectUi, 0);
     $('welcome').hidden = false; $('app').hidden = true; $('reconnect').hidden = true; $('btnChange').hidden = true; $('hist').hidden = true;
     $('fileInfo').textContent = '';
   }
   function showReconnect(msg) {
+    setTimeout(refreshReconnectUi, 0);
     $('welcome').hidden = true; $('app').hidden = true; $('reconnect').hidden = false; $('btnChange').hidden = true; $('hist').hidden = true;
     $('reconnectMsg').textContent = msg || '前回のファイル「' + handle.name + '」へのアクセス許可が必要です。';
     $('fileInfo').textContent = '';
   }
   function showApp() {
+    setTimeout(refreshReconnectUi, 0);
     $('welcome').hidden = true; $('reconnect').hidden = true; $('app').hidden = false; $('btnChange').hidden = false; $('hist').hidden = false;
     $('fileInfo').textContent = '📄 ' + handle.name;
     setState('');
@@ -1092,6 +1180,12 @@
     const sig = JSON.stringify([filters, sort, pinFirst]);
     if (sig !== lastSig) { limit = PAGE_SIZE; lastSig = sig; }
     const view = list.slice(0, limit);
+    if (taskView === 'board') {   // カンバン表示: 表の行は作らず、ステータスごとのカードを描く
+      $('rows').innerHTML = ''; $('empty').hidden = true; $('moreRows').hidden = true;
+      renderBoard(list);
+      shown = list; liveEffort.clear(); updateCount(); renderSummary();
+      return;
+    }
     $('rows').innerHTML = view.map(rowHtml).join('');
     $('empty').hidden = list.length > 0;
     const rest = list.length - view.length;
@@ -1305,6 +1399,150 @@
     $('btnPresetDel').disabled = !presets.length;
   }
 
+  // ---------- 編集の登録・リンク行・ピン留め (一覧の編集行と、カンバンの編集ダイアログで共通) ----------
+  // root = 入力欄を含む要素。extra(t) = 追加で変える項目 (変えた項目名の配列を返す)
+  function commitEdit(t, root, extra) {
+    const val = (id, d) => { const el = $(id); return el ? el.value : d; };   // 非表示の列は入力欄が無いので既存値を使う
+    const name = val('e_name', t.name).trim();
+    const start = val('e_start', t.start), due = val('e_due', t.due);
+    if (!name) { alert('タスク名を入力してください'); $('e_name')?.focus(); return false; }
+    if (start && due && start > due) { alert('着手日が期日より後になっています'); return false; }
+    const seen = new Set(); let links = t.links || [];
+    if (root.querySelector('.lrow')) links = [];
+    for (const row of root.querySelectorAll('.lrow')) {
+      const title = row.querySelector('.l-title').value.trim();
+      let url = row.querySelector('.l-url').value.trim();
+      if (!url) { if (title) { alert(`別名「${title}」に対応するURLが入力されていません`); row.querySelector('.l-url').focus(); return false; } continue; }
+      url = normalizeLinkUrl(url);
+      if (!isLinkable(url)) { alert('リンクは http(s):// のURL、またはローカルのパス(C:\\... / \\\\server\\...)のみ登録できます: ' + url); row.querySelector('.l-url').focus(); return false; }
+      if (!seen.has(url)) { seen.add(url); links.push({ title, url }); }
+    }
+    const other = lockedByOther(t.id);
+    if (other && !confirm(`${other.by} さんが、このタスクの編集を始めています。\nこのまま保存すると、相手の変更を上書きする可能性があります。保存しますか？`)) return false;
+    pushUndo(t.id === newId ? '追加' : '編集');
+    const oldVals = { name: t.name, creator: t.creator || '', created: t.created, start: t.start, due: t.due, priority: t.priority, links: canon(t.links || []) };
+    Object.assign(t, { name, creator: val('e_creator', t.creator || '').trim(), created: val('e_created', t.created), start, due, priority: val('e_priority', t.priority), links });
+    delete t.link;
+    const more = extra ? extra(t) : [];
+    if (t.id !== newId) { t.updatedAt = Date.now(); t.updatedBy = ensureUserName(); }   // 新規の登録は「更新」に数えない
+    const changed = [...Object.keys(oldVals).filter(k => (k === 'links' ? canon(t.links || []) : t[k]) !== oldVals[k]), ...more];
+    if (changed.length || t.id === newId) touchFields(t, ...changed);   // 変えた項目だけを記録 (他の人の別項目の変更を残すため)
+    releaseLock(t.id);
+    editingId = null; newId = null; save(); render();
+    return true;
+  }
+  function linkAddRow(btn) {
+    btn.insertAdjacentHTML('beforebegin', linkRow());
+    btn.previousElementSibling.querySelector('.l-title').focus();
+  }
+  function linkRemoveRow(btn) {
+    const row = btn.closest('.lrow'), box = row.parentNode;
+    if (box.querySelectorAll('.lrow').length > 1) row.remove();
+    else row.querySelectorAll('input').forEach(i => { i.value = ''; });   // 最後の1行は空にする
+  }
+  function togglePin(t) {
+    pushUndo(t.pinned ? 'ピン留め解除' : 'ピン留め');
+    if (t.pinned) delete t.pinned; else t.pinned = true;
+    touchFields(t, 'pinned');
+    save(); render();
+  }
+  function startNewTask(status) {
+    if (newId) tasks = tasks.filter(x => x.id !== newId);   // 未確定の前回分は破棄
+    const t = { id: uid(), createdAt: Date.now(), creator: ensureUserName(), name: '', created: localISO(today()), start: '', due: '', priority: '中', status: status || '未着手', links: [], note: '' };
+    $('btnClear').click();   // 新規が絞り込みで消えないよう、フィルタを解除
+    tasks.push(t); editingId = newId = t.id;
+    if (taskView === 'board') { openTaskDialog(t, true); return; }
+    render();
+    document.querySelector('.tablewrap').scrollTop = 0;
+  }
+
+  // ---------- カンバン表示 ----------
+  let taskView = (() => { try { return localStorage.getItem('taskView') === 'board' ? 'board' : 'list'; } catch { return 'list'; } })();
+  const KPAGE = 50;                     // 列ごとに、最初に表示するカードの数
+  const kLimit = {};
+  const KCOLOR = { '未着手': '#64748b', '進行中': '#2563eb', '保留': '#d97706', '完了': '#16a34a' };
+  const PRIO_COLOR = { '高': '#dc2626', '中': '#d97706', '低': '#2563eb' };
+  let taskDlgSaved = false;
+
+  function kCardHtml(t) {
+    const r = remainDays(t), lk = lockedByOther(t.id), done = t.status === '完了', hold = t.status === '保留';
+    const live = !done && !hold && r !== null;
+    let due = '';
+    if (t.due) {
+      const txt = done ? '' : hold ? '保留中' : r < 0 ? `${-r}日超過` : r === 0 ? '今日' : `あと${r}日`;
+      due = `<span class="${live && r < 0 ? 'over' : live && r <= 3 ? 'soon' : ''}">📅 ${esc(t.due)}${txt ? ` (${txt})` : ''}</span>`;
+    }
+    const ls = validLinks(t).length;
+    return `<div class="kcard${t.pinned ? ' pinned' : ''}${live && r < 0 ? ' overdue' : live && r === 0 ? ' today' : ''}${lk ? ' locked' : ''}${done ? ' done' : ''}" data-id="${esc(t.id)}" style="--pc:${PRIO_COLOR[t.priority] || '#64748b'}"${lk ? '' : ' draggable="true"'}>
+      <div class="ktop">${isNew(t) ? '<span class="newbadge">NEW</span>' : ''}<div class="kname">${esc(t.name) || '<span class="hint">(無題)</span>'}</div><button type="button" class="kbtn kpin${t.pinned ? ' on' : ''}" data-k="pin" title="ピン留め">📌</button><button type="button" class="kbtn" data-k="edit" title="編集">✎</button></div>
+      <div class="kmeta"><span class="badge p-${esc(t.priority)}">${esc(t.priority)}</span>${due}${t.effort !== '' && t.effort != null ? `<span>⏱ ${esc(t.effort)}h</span>` : ''}${ls ? `<button type="button" class="kbtn linkbtn" data-k="links" title="リンク">🔗<span>${ls}</span></button>` : ''}${t.creator ? `<span title="起票者">👤 ${esc(t.creator)}</span>` : ''}</div>
+      ${t.note ? `<div class="knote">${esc(t.note)}</div>` : ''}
+      ${lk ? `<div class="klock">🔒 ${esc(lk.by)}さんが編集中</div>` : ''}
+    </div>`;
+  }
+  function renderBoard(list) {
+    $('kanban').innerHTML = (filters.hideDone ? STATUSES.filter(s => s !== '完了') : STATUSES).map(st => {   // 「完了を隠す」のときは、完了の列そのものを出さない
+      const items = list.filter(t => t.status === st);
+      const hours = Math.round(items.reduce((a, t) => a + (Number(t.effort) || 0), 0) * 100) / 100;
+      const lim = kLimit[st] || KPAGE;
+      const body = items.slice(0, lim).map(kCardHtml).join('') + (items.length > lim ? `<button type="button" class="kmore" data-k="more" data-st="${st}">さらに${Math.min(KPAGE, items.length - lim)}件表示 (残り ${items.length - lim}件)</button>` : '');
+      return `<div class="kcol" data-st="${st}"><div class="khead" style="--c:${KCOLOR[st]}"><b>${st}</b><span class="kcount">${items.length}</span><span class="kh">${hours ? hours + 'h' : ''}</span><button type="button" class="kadd" data-k="add" title="このステータスでタスクを追加">＋</button></div><div class="kcards">${body}</div></div>`;
+    }).join('');
+  }
+  function moveToStatus(t, st) {
+    if (t.status === st) return;
+    const o = lockedByOther(t.id); if (o) { alert(`${o.by} さんが編集中です`); return; }
+    pushUndo('ステータス変更'); setStatus(t, st); save(); render();
+  }
+  function setTaskView(v) {
+    if (v !== taskView && editingId) { alert('編集を終えてから、表示を切り替えてください'); return; }
+    taskView = v;
+    try { localStorage.setItem('taskView', v); } catch {}
+    $('kanban').hidden = v !== 'board';
+    $('tbl').parentNode.hidden = v === 'board';
+    $('vwList').classList.toggle('on', v !== 'board'); $('vwBoard').classList.toggle('on', v === 'board');
+    render();
+  }
+
+  // ---------- カンバンの編集ダイアログ ----------
+  function taskDlgHtml(t) {
+    const links = ((t.links || []).length ? t.links : [undefined]).map(linkRow).join('');
+    return `<h3>${t.id === newId ? 'タスクを追加' : 'タスクを編集'}</h3>
+      <div class="tgrid">
+        <label class="wide">タスク名<input type="text" id="e_name" value="${esc(t.name)}" placeholder="タスク名"></label>
+        <label>起票者<input type="text" id="e_creator" value="${esc(t.creator || '')}"></label>
+        <label>起票日<input type="date" id="e_created" value="${esc(t.created)}"></label>
+        <label>着手日<input type="date" id="e_start" value="${esc(t.start)}"></label>
+        <label>期日<input type="date" id="e_due" value="${esc(t.due)}"></label>
+        <label>優先度<select id="e_priority">${opts(PRIORITIES, t.priority)}</select></label>
+        <label>ステータス<select id="e_status">${opts(STATUSES, t.status)}</select></label>
+        <label>工数(h)<input type="number" id="e_effort" min="0" step="0.5" value="${esc(t.effort ?? '')}"></label>
+        <div class="wide"><div class="lbl">リンク</div><div class="linkedit">${links}<button type="button" class="ladd" data-a="ladd">＋ リンク追加</button></div></div>
+        <label class="wide">備考<textarea id="e_note" rows="3">${esc(t.note)}</textarea></label>
+      </div>
+      <div class="dlgbtns"><button type="button" id="tdCancel">取消</button><button type="button" class="primary" id="tdOk">保存</button></div>`;
+  }
+  async function openTaskDialog(t, isNew) {
+    if (!isNew && !(await acquireLock(t.id))) return;
+    editingId = t.id; taskDlgSaved = false;
+    $('taskDlgBody').innerHTML = taskDlgHtml(t);
+    $('taskDlg').showModal(); $('e_name').focus();
+  }
+  function taskDlgSave() {
+    const t = tasks.find(x => x.id === editingId); if (!t) return;
+    const ok = commitEdit(t, $('taskDlg'), tt => {
+      const ch = [];
+      const eff = $('e_effort').value, ne = eff === '' ? '' : Math.max(0, Number(eff));
+      if (String(tt.effort ?? '') !== String(ne)) { tt.effort = ne; ch.push('effort'); }
+      const note = $('e_note').value;
+      if (note !== (tt.note || '')) { tt.note = note; ch.push('note'); }
+      const st = $('e_status').value;
+      if (st !== tt.status) setStatus(tt, st);
+      return ch;
+    });
+    if (ok) { taskDlgSaved = true; $('taskDlg').close(); }
+  }
+
   function bindTable() {
     $('moreRows').addEventListener('click', e => {
       const b = e.target.closest('[data-more]'); if (!b) return;
@@ -1320,22 +1558,10 @@
       }
       switch (btn.dataset.a) {
         case 'edit': if (!(await acquireLock(t.id))) return; editingId = t.id; render(); break;
-        case 'pin':
-          pushUndo(t.pinned ? 'ピン留め解除' : 'ピン留め');
-          if (t.pinned) delete t.pinned; else t.pinned = true;
-          touchFields(t, 'pinned');
-          save(); render(); break;
+        case 'pin': togglePin(t); break;
         case 'links': showLinkMenu(btn, t); break;
-        case 'ladd': {
-          btn.insertAdjacentHTML('beforebegin', linkRow());
-          btn.previousElementSibling.querySelector('.l-title').focus(); break;
-        }
-        case 'lrm': {
-          const row = btn.closest('.lrow'), box = row.parentNode;
-          if (box.querySelectorAll('.lrow').length > 1) row.remove();
-          else row.querySelectorAll('input').forEach(i => i.value = ''); // 最後の1行は空にする
-          break;
-        }
+        case 'ladd': linkAddRow(btn); break;
+        case 'lrm': linkRemoveRow(btn); break;
         case 'cancel':
           if (t.id === newId) tasks = tasks.filter(x => x !== t); // 追加直後の未確定レコードは破棄
           else { releaseLock(t.id); save(); }                      // 編集を終えたのでロックを解除
@@ -1348,34 +1574,7 @@
             save(); render();
           }
           break;
-        case 'ok': {
-          const val = (id, d) => { const el = $(id); return el ? el.value : d; };   // 非表示の列は入力欄が無いので既存値を使う
-          const name = val('e_name', t.name).trim();
-          const start = val('e_start', t.start), due = val('e_due', t.due);
-          if (!name) { alert('タスク名を入力してください'); $('e_name')?.focus(); return; }
-          if (start && due && start > due) { alert('着手日が期日より後になっています'); return; }
-          const seen = new Set(); let links = t.links || [];
-          if (tr.querySelector('.lrow')) links = [];
-          for (const row of tr.querySelectorAll('.lrow')) {
-            const title = row.querySelector('.l-title').value.trim();
-            let url = row.querySelector('.l-url').value.trim();
-            if (!url) { if (title) { alert(`別名「${title}」に対応するURLが入力されていません`); row.querySelector('.l-url').focus(); return; } continue; }
-            url = normalizeLinkUrl(url);
-            if (!isLinkable(url)) { alert('リンクは http(s):// のURL、またはローカルのパス(C:\\... / \\\\server\\...)のみ登録できます: ' + url); row.querySelector('.l-url').focus(); return; }
-            if (!seen.has(url)) { seen.add(url); links.push({ title, url }); }
-          }
-          const other = lockedByOther(t.id);
-          if (other && !confirm(`${other.by} さんが、このタスクの編集を始めています。\nこのまま保存すると、相手の変更を上書きする可能性があります。保存しますか？`)) return;
-          pushUndo(t.id === newId ? '追加' : '編集');
-          const oldVals = { name: t.name, creator: t.creator || '', created: t.created, start: t.start, due: t.due, priority: t.priority, links: canon(t.links || []) };
-          Object.assign(t, { name, creator: val('e_creator', t.creator || '').trim(), created: val('e_created', t.created), start, due, priority: val('e_priority', t.priority), links });
-          delete t.link;
-          if (t.id !== newId) { t.updatedAt = Date.now(); t.updatedBy = ensureUserName(); }   // 新規の登録は「更新」に数えない
-          const changed = Object.keys(oldVals).filter(k => (k === 'links' ? canon(t.links || []) : t[k]) !== oldVals[k]);
-          if (changed.length || t.id === newId) touchFields(t, ...changed);   // 変えた項目だけを記録 (他の人の別項目の変更を残すため)
-          releaseLock(t.id);
-          editingId = null; newId = null; save(); render(); break;
-        }
+        case 'ok': commitEdit(t, tr); break;
         case 'del':
           if (confirm(`「${t.name || '(無題)'}」を削除しますか？\n(「元に戻す」で復元できます)`)) { pushUndo('削除'); deleted[t.id] = Date.now(); tasks = tasks.filter(x => x !== t); save(); render(); }
           break;
@@ -1438,14 +1637,72 @@
       if (e.target.dataset.f === 'effort') { liveEffort.set(e.target.closest('tr').dataset.id, e.target.value); updateCount(); }
     });
 
-    $('btnAdd').onclick = () => {
-      if (newId) tasks = tasks.filter(x => x.id !== newId); // 未確定の前回分は破棄
-      const t = { id: uid(), createdAt: Date.now(), creator: ensureUserName(), name: '', created: localISO(today()), start: '', due: '', priority: '中', status: '未着手', links: [], note: '' };
-      // 新規行が絞り込みで消えないよう、フィルタを解除
-      $('btnClear').click();
-      tasks.push(t); editingId = newId = t.id; render();
-      document.querySelector('.tablewrap').scrollTop = 0;
-    };
+    $('btnAdd').onclick = () => startNewTask();
+
+    // 表示の切り替え (一覧 / カンバン)
+    $('vwList').onclick = () => setTaskView('list');
+    $('vwBoard').onclick = () => setTaskView('board');
+    $('kanban').hidden = taskView !== 'board'; $('tbl').parentNode.hidden = taskView === 'board';
+    $('vwList').classList.toggle('on', taskView !== 'board'); $('vwBoard').classList.toggle('on', taskView === 'board');
+
+    // カンバン: カードの操作
+    const kb = $('kanban');
+    kb.addEventListener('click', e => {
+      const b = e.target.closest('[data-k]'); if (!b) return;
+      const card = b.closest('.kcard'), t = card && tasks.find(x => x.id === card.dataset.id);
+      switch (b.dataset.k) {
+        case 'add': startNewTask(b.closest('.kcol').dataset.st); break;
+        case 'more': kLimit[b.dataset.st] = (kLimit[b.dataset.st] || KPAGE) + KPAGE; render(); break;
+        case 'pin': if (t) { const o = lockedByOther(t.id); if (o) alert(`${o.by} さんが編集中です`); else togglePin(t); } break;
+        case 'edit': if (t) openTaskDialog(t, false); break;
+        case 'links': if (t) showLinkMenu(b, t); break;
+      }
+    });
+    kb.addEventListener('dblclick', e => {   // カードをダブルクリックで編集
+      const c = e.target.closest('.kcard'); if (!c || e.target.closest('button, a')) return;
+      const t = tasks.find(x => x.id === c.dataset.id); if (t) openTaskDialog(t, false);
+    });
+    // カンバン: ドラッグして、別の列に落とすとステータスが変わる
+    let kDrag = null;
+    kb.addEventListener('dragstart', e => {
+      const c = e.target.closest && e.target.closest('.kcard');
+      if (!c || e.target !== c) { e.preventDefault(); return; }   // ボタンなどからのドラッグは対象外
+      kDrag = c.dataset.id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', kDrag); c.classList.add('dragging');
+    });
+    kb.addEventListener('dragover', e => {
+      kb.querySelectorAll('.kcol.over').forEach(x => x.classList.remove('over'));
+      const col = e.target.closest && e.target.closest('.kcol'); if (!col || !kDrag) return;
+      e.preventDefault(); col.classList.add('over');
+    });
+    kb.addEventListener('drop', e => {
+      const col = e.target.closest && e.target.closest('.kcol'); if (!col || !kDrag) return;
+      e.preventDefault();
+      const t = tasks.find(x => x.id === kDrag); kDrag = null;
+      if (t) moveToStatus(t, col.dataset.st);
+    });
+    kb.addEventListener('dragend', () => { kDrag = null; kb.querySelectorAll('.dragging, .over').forEach(x => x.classList.remove('dragging', 'over')); });
+
+    // 編集ダイアログ
+    $('taskDlg').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.a === 'ladd') linkAddRow(b);
+      else if (b.dataset.a === 'lrm') linkRemoveRow(b);
+      else if (b.id === 'tdOk') taskDlgSave();
+      else if (b.id === 'tdCancel') $('taskDlg').close();
+    });
+    $('taskDlg').addEventListener('keydown', e => {   // Enter (1行の欄) / Ctrl+Enter = 保存
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+      if (e.ctrlKey || e.metaKey || e.target.tagName === 'INPUT') { e.preventDefault(); taskDlgSave(); }
+    });
+    $('taskDlg').addEventListener('close', () => {   // 保存せずに閉じた (取消 / Esc): 新規は破棄、既存はロックを解除
+      if (!taskDlgSaved && editingId) {
+        const t = tasks.find(x => x.id === editingId);
+        if (t && t.id === newId) tasks = tasks.filter(x => x !== t);
+        else if (t) { releaseLock(t.id); save(); }
+        editingId = null; newId = null; render();
+      }
+      taskDlgSaved = false;
+    });
   }
 
   // ---------- 外部更新 (OneDrive 同期) の検知 ----------
@@ -1524,20 +1781,23 @@
   let currentTab = 'tasks';
   function setTab(t) {
     currentTab = t;
-    document.body.classList.toggle('tab-sc', t === 'sc');
-    $('tabTasks').hidden = t === 'sc'; $('tabSc').hidden = t !== 'sc';
+    document.body.classList.toggle('tab-sc', t !== 'tasks');   // 定型文のタブでも、ヘッダーはショートカット側 (ファイル名・戻る/進む) の表示にする
+    $('tabTasks').hidden = t !== 'tasks'; $('tabSc').hidden = t !== 'sc'; $('tabSn').hidden = t !== 'sn';
     document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
     try { localStorage.setItem('taskTab', t); } catch {}
-    if (t === 'sc') scRender(); else if (!$('app').hidden) render();   // 隠れている間は列幅が計算できないので、戻ったときに描き直す
+    if (t === 'sc') scRender(); else if (t === 'sn') snRender(); else if (!$('app').hidden) render();   // 隠れている間は列幅が計算できないので、戻ったときに描き直す
   }
   function scShow(which) {
+    setTimeout(refreshReconnectUi, 0);
     $('scWelcome').hidden = which !== 'welcome'; $('scReconnect').hidden = which !== 'reconnect'; $('scMain').hidden = which !== 'main';
+    $('snNoFile').hidden = which !== 'welcome'; $('snMain').hidden = which !== 'main';
     ['scFile', 'scBtnChange', 'scHist'].forEach(id => { $(id).hidden = which !== 'main'; });   // ヘッダーのファイル名・変更・戻る/進むは、一覧の表示中だけ
   }
 
   // ショートカットの「元に戻す / やり直す」
   SC.undo = []; SC.redo = [];
-  const scSnap = () => JSON.stringify(SC.items.filter(x => x.id !== SC.newId));
+  SC.snips = [];   // 定型文 (ショートカットと同じファイルに保存)
+  const scSnap = () => JSON.stringify({ s: SC.items.filter(x => x.id !== SC.newId), n: SC.snips });
   function scHist() {
     $('scBtnUndo').disabled = !SC.undo.length; $('scBtnRedo').disabled = !SC.redo.length;
     $('scBtnUndo').title = SC.undo.length ? '元に戻す: ' + SC.undo[SC.undo.length - 1].label + ' (Ctrl+Z)' : '元に戻す (Ctrl+Z)';
@@ -1546,10 +1806,10 @@
   function scRestore(from, to, verb) {
     const e = from.pop(); if (!e) return;
     to.push({ label: e.label, snap: scSnap() });
-    const prev = new Map(SC.items.map(x => [x.id, JSON.stringify(x)]));
-    SC.items = JSON.parse(e.snap);
-    const now = Date.now(), ids = new Set(SC.items.map(x => x.id));
-    SC.items.forEach(x => { if (prev.get(x.id) !== JSON.stringify(x)) x.modAt = now; });   // 変わったものは、他の人の画面でも新しい内容として扱われる
+    const prev = new Map([...SC.items, ...SC.snips].map(x => [x.id, JSON.stringify(x)]));
+    const st = JSON.parse(e.snap); SC.items = st.s; SC.snips = st.n;
+    const all = [...SC.items, ...SC.snips], now = Date.now(), ids = new Set(all.map(x => x.id));
+    all.forEach(x => { if (prev.get(x.id) !== JSON.stringify(x)) x.modAt = now; });   // 変わったものは、他の人の画面でも新しい内容として扱われる
     prev.forEach((_, id) => { if (!ids.has(id)) SC.deleted[id] = now; });
     SC.editing = SC.newId = null;
     scSave(); scRender(); scHist(); scState(verb + 'しました (' + e.label + ')');
@@ -1561,11 +1821,12 @@
     let f, text;
     await retry(async () => { f = await SC.handle.getFile(); text = await f.text(); });
     SC.last = f.lastModified;
-    if (!text.trim()) { SC.items = []; SC.deleted = {}; return; }
+    if (!text.trim()) { SC.items = []; SC.snips = []; SC.deleted = {}; return; }
     const chk = checkDataText(text, 'shortcuts');
     if (!chk.ok) throw new Error(chk.msg);
     const d = JSON.parse(text);
     SC.items = Array.isArray(d) ? d : (d.shortcuts || []);
+    SC.snips = (!Array.isArray(d) && d.snippets) || [];
     SC.deleted = (!Array.isArray(d) && d.deleted) || {};
   }
   async function scUse(h, isNew) {
@@ -1578,27 +1839,31 @@
       if (chk.empty && !confirm('「' + h.name + '」は空のファイルです。\nショートカット用のデータファイルとして使いますか？')) return;
     }
     SC.handle = h; await idb.set('scHandle', h); SC.editing = SC.newId = null; SC.undo = []; SC.redo = []; scHist();
-    if (isNew) { SC.items = []; SC.deleted = {}; await scSave(); } else await scLoadFile();
+    if (isNew) { SC.items = []; SC.snips = []; SC.deleted = {}; await scSave(); } else await scLoadFile();
     scShow('main'); scRender();
   }
 
   // 他の人の保存内容をマージ (レコード単位で、modAt の新しいほう)。編集中の行は書き換えない
   function scMerge(d) {
-    const arr = Array.isArray(d) ? d : (d.shortcuts || []), dl = (!Array.isArray(d) && d.deleted) || {};
+    const obj = !Array.isArray(d);
+    const arr = obj ? (d.shortcuts || []) : d, snp = (obj && d.snippets) || [], dl = (obj && d.deleted) || {};
     for (const [id, at] of Object.entries(dl)) if (!(SC.deleted[id] >= at)) SC.deleted[id] = at;
     const ts = x => x.modAt || 0;
-    const local = new Map(SC.items.map(x => [x.id, x])), remote = new Map(arr.map(x => [x.id, x]));
-    const out = [];
-    for (const [id, r] of remote) {
-      const l = local.get(id);
-      if (id === SC.editing && l) { out.push(l); continue; }
-      if (SC.deleted[id] >= ts(r)) continue;
-      out.push(l && ts(l) > ts(r) ? l : r);
-    }
-    for (const [id, l] of local) { if (!remote.has(id) && !(SC.deleted[id] >= ts(l))) out.push(l); }
-    const before = JSON.stringify(SC.items);
-    SC.items = out;
-    return JSON.stringify(out) !== before;
+    const mergeList = (localArr, remoteArr) => {
+      const local = new Map(localArr.map(x => [x.id, x])), remote = new Map(remoteArr.map(x => [x.id, x]));
+      const out = [];
+      for (const [id, r] of remote) {
+        const l = local.get(id);
+        if (id === SC.editing && l) { out.push(l); continue; }
+        if (SC.deleted[id] >= ts(r)) continue;
+        out.push(l && ts(l) > ts(r) ? l : r);
+      }
+      for (const [id, l] of local) { if (!remote.has(id) && !(SC.deleted[id] >= ts(l))) out.push(l); }
+      return out;
+    };
+    const before = JSON.stringify([SC.items, SC.snips]);
+    SC.items = mergeList(SC.items, arr); SC.snips = mergeList(SC.snips, snp);
+    return JSON.stringify([SC.items, SC.snips]) !== before;
   }
   async function scPull() {
     const f = await SC.handle.getFile(); if (f.lastModified === SC.last) return;
@@ -1609,7 +1874,7 @@
     if (changed) {
       SC.undo = []; SC.redo = []; scHist();   // 他の人の更新を取り込んだら、巻き戻しの履歴は破棄 (古い状態へ戻して上書きしないため)
       const a = document.activeElement;
-      if (SC.editing || (a && a.closest && a.closest('#scBoard'))) SC.dirty = true; else scRender();   // 入力中は終わってから反映
+      if (SC.editing || (a && a.closest && a.closest('#scBoard, #snBoard'))) SC.dirty = true; else scRender();   // 入力中は終わってから反映
     }
   }
   function scSave() {
@@ -1620,7 +1885,7 @@
           await scPull();   // 書き込む直前に最新を取り込む
           const old = Date.now() - 30 * 864e5; for (const id of Object.keys(SC.deleted)) if (SC.deleted[id] < old) delete SC.deleted[id];
           const w = await SC.handle.createWritable();
-          await w.write(JSON.stringify({ version: 1, kind: 'shortcuts', shortcuts: SC.items.filter(x => x.id !== SC.newId), deleted: SC.deleted }, null, 2));
+          await w.write(JSON.stringify({ version: 1, kind: 'shortcuts', shortcuts: SC.items.filter(x => x.id !== SC.newId), snippets: SC.snips, deleted: SC.deleted }, null, 2));
           await w.close();
         });
         try { SC.last = (await SC.handle.getFile()).lastModified; } catch { /* 保存自体は成功 */ }
@@ -1728,6 +1993,7 @@
   }
 
   function scRender() {
+    snRender();   // 定型文のタブを見ているときは、そちらも描き直す
     if (currentTab !== 'sc' || $('scMain').hidden) return;
     SC.dirty = false;
     const usage = scUsageGet(), q = SC.q.trim().toLowerCase();
@@ -1855,20 +2121,9 @@
       try { const [h] = await showOpenFilePicker({ types: pickerTypes, startIn: SC.handle || undefined }); await scUse(h, false); }
       catch (e) { if (e.name !== 'AbortError') alert('読み込みに失敗しました: ' + e.message); }
     };
-    $('scBtnOpen').onclick = open; $('scBtnRepick').onclick = open;
+    $('scBtnOpen').onclick = open; $('scBtnRepick').onclick = repickAll;
     $('scBtnOther').onclick = () => scShow('welcome');
-    $('scBtnReconnect').onclick = async () => {   // 前回のファイルへのアクセス許可を取り直す (タスク側の「再接続」と同じ)
-      const msg = t => { $('scReconnectMsg').textContent = t; };
-      try {
-        // ユーザー操作の直後に呼ぶ必要があるため、事前の await を挟まず直接 requestPermission する
-        msg('許可を確認しています… ブラウザの上部/アドレスバー付近に出るダイアログで「許可」を選んでください。');
-        const hint = setTimeout(() => msg('許可ダイアログが出ない場合、このブラウザ/開き方では許可を取れません。「同じファイルを選び直す」を押してください。'), 4000);
-        let st;
-        try { st = await SC.handle.requestPermission({ mode: 'readwrite' }); } finally { clearTimeout(hint); }
-        if (st !== 'granted') return msg('許可が得られませんでした(状態: ' + st + ')。「同じファイルを選び直す」を試してください。');
-        await scLoadFile(); scShow('main'); scRender();
-      } catch (e) { msg('再接続に失敗しました: ' + e.name + ': ' + e.message + '。「同じファイルを選び直す」を試してください。'); }
-    };
+    $('scBtnReconnect').onclick = reconnectAll;
     $('scBtnUndo').onclick = scUndo; $('scBtnRedo').onclick = scRedo; scHist();
     $('scBtnChange').onclick = () => { SC.editing = null; scShow('welcome'); };
 
@@ -1958,19 +2213,281 @@
         else { $('scReconnectMsg').textContent = '前回のファイル「' + SC.handle.name + '」を開き直してください(ブラウザの仕様で、起動のたびに必要です)。'; scShow('reconnect'); }
       } catch (e) { $('scReconnectMsg').textContent = '「' + SC.handle.name + '」を読み込めません: ' + e.message; scShow('reconnect'); }
     })();
-    try { if (localStorage.getItem('taskTab') === 'sc') setTab('sc'); } catch {}
+    try { const tt = localStorage.getItem('taskTab'); if (tt === 'sc' || tt === 'sn') setTab(tt); } catch {}
+  }
+
+  // ---------- 定型文 (ショートカットと同じデータファイルに保存) ----------
+  const SN = { q: '', cat: '', sort: (() => { try { return localStorage.getItem('snSort') || 'added'; } catch { return 'added'; } })(), limit: SC_PAGE, lastSig: '', dlgItem: null };
+  const snUid = () => 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const snTitleFrom = text => { const l = (text.split(/\r?\n/).find(s => s.trim()) || '').trim(); return l.slice(0, 30) + (l.length > 30 ? '…' : ''); };
+
+  // 本文中の {{…}} を置き換える。{{今日}} {{曜日}} {{時刻}} {{名前}} は自動。{{?相手の名前}} のように「?」を付けると、コピーするときに入力を求める
+  function snExpand(text) {
+    const now = new Date(), p2 = n => String(n).padStart(2, '0');
+    const built = {
+      '今日': `${now.getFullYear()}/${p2(now.getMonth() + 1)}/${p2(now.getDate())}`, '日付': `${now.getFullYear()}/${p2(now.getMonth() + 1)}/${p2(now.getDate())}`,
+      '曜日': '日月火水木金土'[now.getDay()], '時刻': `${p2(now.getHours())}:${p2(now.getMinutes())}`, '名前': getUser() || '',
+    };
+    const asked = {};
+    return text.replace(/\{\{\s*(\?)?([^{}]+?)\s*\}\}/g, (m, ask, key) => {
+      if (ask) {
+        if (!(key in asked)) { const v = prompt(key + ' を入力してください', ''); if (v === null) throw new Error('cancel'); asked[key] = v; }
+        return asked[key];
+      }
+      if (key === '名前') return getUser() || ensureUserName();   // 名前が未設定なら、ここで入力を求める
+      return key in built ? built[key] : m;
+    });
+  }
+  async function snCopy(x, btn) {
+    let text; try { text = snExpand(x.text || ''); } catch { return; }   // 入力を取り消したら、コピーしない
+    const ok = await copyText(text); scUsed(x.id);
+    if (btn) { const label = btn.textContent; btn.textContent = ok ? 'コピーしました ✓' : 'コピー失敗'; setTimeout(() => { btn.textContent = label; }, 1200); }
+  }
+
+  function snCardHtml(x) {
+    return `<div class="sccard sncard${x.pinned ? ' pinned' : ''}" data-id="${esc(x.id)}" style="--c:#0ea5e9"${SN.sort === 'added' ? ' draggable="true"' : ''}>
+      <div class="sctop"><span class="scic" title="定型文">💬</span><div class="scname">${esc(x.title) || '<span class="hint">(無題)</span>'}</div><button type="button" class="scmore linkbtn" data-sn="menu" title="その他の操作">⋯</button></div>
+      <div class="snprev">${esc(x.text)}</div>
+      <div class="scacts"><button type="button" class="btn pri" data-sn="copy" title="本文をクリップボードにコピーします ({{今日}} などは自動で置き換わります)">コピー</button><button type="button" class="btn" data-sn="edit">編集</button></div>
+    </div>`;
+  }
+
+  function snRender() {
+    if (currentTab !== 'sn' || $('snMain').hidden) return;
+    SC.dirty = false;
+    const usage = scUsageGet(), q = SN.q.trim().toLowerCase();
+    const cats = [...new Set(SC.snips.map(x => x.cat || '').filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ja'));
+    if (SN.cat && SN.cat !== '__none' && !cats.includes(SN.cat)) SN.cat = '';
+    const inCat = x => !SN.cat || (SN.cat === '__none' ? !x.cat : x.cat === SN.cat);
+    const list = SC.snips.filter(x => inCat(x) && (!q || `${x.title} ${x.text} ${x.cat || ''}`.toLowerCase().includes(q)));
+    const cmp = SN.sort === 'name' ? (a, b) => (a.title || '').localeCompare(b.title || '', 'ja')
+      : SN.sort === 'recent' ? (a, b) => ((usage[b.id] && usage[b.id].t) || 0) - ((usage[a.id] && usage[a.id].t) || 0) : () => 0;
+    const sorted = arr => arr.slice().sort(cmp);
+    const secs = [];
+    const pinned = list.filter(x => x.pinned), rest = list.filter(x => !x.pinned);
+    if (pinned.length) secs.push({ key: 'pin', title: '📌 ピン留め', items: sorted(pinned) });
+    if (!q && !SN.cat) {
+      const recent = SC.snips.filter(x => usage[x.id]).sort((a, b) => usage[b.id].t - usage[a.id].t).slice(0, 6);
+      if (recent.length) secs.push({ key: 'recent', title: '🕒 最近使った', items: recent });
+    }
+    for (const c of cats) { const it = rest.filter(x => x.cat === c); if (it.length) secs.push({ key: 'c:' + c, title: c, items: sorted(it) }); }
+    const none = rest.filter(x => !x.cat);
+    if (none.length) secs.push({ key: 'none', title: cats.length ? '未分類' : '', items: sorted(none) });
+
+    const sig = JSON.stringify([SN.q, SN.cat, SN.sort]);
+    if (sig !== SN.lastSig) { SN.limit = SC_PAGE; SN.lastSig = sig; }
+    let shown = 0;
+    const html = secs.map(s => {
+      const take = s.items.slice(0, Math.max(SN.limit - shown, 0));
+      if (!take.length) return '';
+      shown += take.length;
+      return `<section class="scsec">${s.title ? `<h3>${esc(s.title)} <span>${s.items.length}</span></h3>` : ''}<div class="cards" data-sec="${esc(s.key)}">${take.map(snCardHtml).join('')}</div></section>`;
+    }).join('');
+    const hidden = secs.reduce((a, s) => a + s.items.length, 0) - shown;
+    $('snBoard').innerHTML = html + (hidden > 0 ? `<div class="moreRows">${shown} 件を表示中 (残り ${hidden} 件)　<button data-snmore="${SC_PAGE * 2}">さらに ${Math.min(SC_PAGE * 2, hidden)} 件表示</button> <button data-snmore="all">すべて表示</button></div>` : '');
+
+    const chip = (v, label, n) => `<button type="button" class="scchip${SN.cat === v ? ' on' : ''}" data-cat="${esc(v)}">${esc(label)} ${n}</button>`;
+    $('snCats').innerHTML = cats.length ? chip('', 'すべて', SC.snips.length) + cats.map(c => chip(c, c, SC.snips.filter(x => x.cat === c).length)).join('') + (SC.snips.some(x => !x.cat) ? chip('__none', '未分類', SC.snips.filter(x => !x.cat).length) : '') : '';
+    $('snCatList').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
+    $('snEmpty').hidden = list.length > 0;
+    $('snEmpty').innerHTML = SC.snips.length ? '条件に合う定型文がありません' : '<b>まだ何も登録されていません</b><br>上の入力欄に、よく使う文章を貼り付けて Enter を押すと、すぐに追加できます。<br><span class="hint">ヒント: 本文に {{今日}} {{曜日}} {{時刻}} {{名前}} と書くと、コピーするときに自動で置き換わります。{{?相手の名前}} のように「?」を付けると、コピーするときに入力を求めます</span>';
+    $('snCount').textContent = `${list.length} / ${SC.snips.length} 件`;
+    $('scFile').textContent = '📄 ' + SC.handle.name;
+    $('snSort').value = SN.sort;
+  }
+
+  function snOpenDialog(x) {
+    SN.dlgItem = x || null; SC.editing = x ? x.id : null;
+    $('snDlgTitle').textContent = x ? '定型文を編集' : '定型文を追加';
+    $('snfTitle').value = x ? x.title || '' : ''; $('snfText').value = x ? x.text || '' : '';
+    $('snfCat').value = x ? x.cat || '' : (SN.cat && SN.cat !== '__none' ? SN.cat : '');
+    $('snDlg').showModal(); $('snfText').focus();
+  }
+  function snDlgSave() {
+    const text = $('snfText').value, cat = $('snfCat').value.trim();
+    let title = $('snfTitle').value.trim();
+    if (!text.trim()) { alert('本文を入力してください'); $('snfText').focus(); return; }
+    if (!title) title = snTitleFrom(text);
+    const x = SN.dlgItem;
+    scPush(x ? '編集' : '追加');
+    if (x) { Object.assign(x, { title, text, modAt: Date.now() }); if (cat) x.cat = cat; else delete x.cat; }
+    else { const n = { id: snUid(), title, text, modAt: Date.now() }; if (cat) n.cat = cat; SC.snips.push(n); }
+    SC.editing = null; $('snDlg').close(); scSave(); snRender();
+  }
+  function snQuickAdd() {   // 貼り付けた文章を、その場で追加する (見出しは、1行目から自動で付く)
+    const text = $('snQuick').value.replace(/\s+$/, '');
+    if (!text.trim()) return;
+    scPush('追加');
+    const n = { id: snUid(), title: snTitleFrom(text), text, modAt: Date.now() };
+    if (SN.cat && SN.cat !== '__none') n.cat = SN.cat;
+    SC.snips.push(n); $('snQuick').value = ''; scSave(); snRender();
+    scState('「' + n.title + '」を追加しました');
+  }
+
+  function showSnMenu(btn, x) {
+    const reopen = linkMenu && linkMenu.dataset.id === x.id;
+    closeLinkMenu(); if (reopen) return;
+    const m = document.createElement('div');
+    m.className = 'linkmenu scmenu'; m.dataset.id = x.id;
+    m.innerHTML = `<button type="button" data-snm="pin">${x.pinned ? '📌 ピン留めを外す' : '📌 ピン留めする'}</button><button type="button" data-snm="edit">編集</button><button type="button" data-snm="dup">複製</button><hr><button type="button" class="danger" data-snm="del">削除</button>`;
+    document.body.appendChild(m);
+    const r = btn.getBoundingClientRect();
+    m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, innerWidth - m.offsetWidth - 8)) + 'px';
+    m.style.top = (r.bottom + m.offsetHeight + 12 > innerHeight ? Math.max(8, r.top - m.offsetHeight - 4) : r.bottom + 4) + 'px';
+    linkMenu = m;
+    m.addEventListener('click', e => {
+      const b = e.target.closest('[data-snm]'); if (!b) return;
+      closeLinkMenu();
+      switch (b.dataset.snm) {
+        case 'pin': scPush(x.pinned ? 'ピン留め解除' : 'ピン留め'); if (x.pinned) delete x.pinned; else x.pinned = true; x.modAt = Date.now(); scSave(); snRender(); break;
+        case 'edit': snOpenDialog(x); break;
+        case 'dup': {
+          scPush('複製');
+          const c = { ...x, id: snUid(), title: (x.title || '') + ' (コピー)', modAt: Date.now() }; delete c.pinned;
+          SC.snips.splice(SC.snips.indexOf(x) + 1, 0, c); scSave(); snRender(); break;
+        }
+        case 'del':
+          if (confirm(`「${x.title || '(無題)'}」を削除しますか？\n(「元に戻す」で復元できます)`)) { scPush('削除'); SC.deleted[x.id] = Date.now(); SC.snips = SC.snips.filter(i => i !== x); scSave(); snRender(); }
+          break;
+      }
+    });
+  }
+
+  function snInit() {
+    $('snBtnNew').onclick = () => $('scBtnNew').click();     // ファイルの選択は、ショートカットと共通
+    $('snBtnOpen').onclick = () => $('scBtnOpen').click();
+    $('snBtnAdd').onclick = () => snOpenDialog(null);
+    $('snQuick').addEventListener('keydown', e => {          // Enter で追加 / Shift+Enter で改行
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); snQuickAdd(); }
+    });
+    $('snSearch').addEventListener('input', e => { SN.q = e.target.value; snRender(); });
+    $('snSearch').addEventListener('keydown', e => {          // Enter で、先頭の定型文をコピー
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+      const first = $('snBoard').querySelector('.sncard [data-sn="copy"]'); if (first) { e.preventDefault(); first.click(); }
+    });
+    document.addEventListener('keydown', e => {              // 「/」で検索欄へ
+      if (currentTab !== 'sn' || $('snMain').hidden || e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.target.closest && e.target.closest('input, textarea, select, dialog')) return;
+      e.preventDefault(); $('snSearch').focus();
+    });
+    $('snSort').addEventListener('change', e => { SN.sort = e.target.value; try { localStorage.setItem('snSort', SN.sort); } catch {} snRender(); });
+    $('snCats').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (b) { SN.cat = b.dataset.cat; snRender(); } });
+
+    const board = $('snBoard');
+    board.addEventListener('click', async e => {
+      const more = e.target.closest('[data-snmore]');
+      if (more) { SN.limit = more.dataset.snmore === 'all' ? Infinity : SN.limit + Number(more.dataset.snmore); snRender(); return; }
+      const card = e.target.closest('.sncard'), x = card && SC.snips.find(i => i.id === card.dataset.id); if (!x) return;
+      const b = e.target.closest('[data-sn]'); if (!b) return;
+      if (b.dataset.sn === 'copy') snCopy(x, b);
+      else if (b.dataset.sn === 'edit') snOpenDialog(x);
+      else if (b.dataset.sn === 'menu') showSnMenu(b, x);
+    });
+    board.addEventListener('dblclick', e => {
+      const n = e.target.closest('.sctop'), card = e.target.closest('.sncard'); if (!n || e.target.closest('button')) return;
+      const x = card && SC.snips.find(i => i.id === card.dataset.id); if (x) snOpenDialog(x);
+    });
+    board.addEventListener('focusout', () => setTimeout(() => { if (SC.dirty && !SC.editing) snRender(); }, 0));
+
+    // 手動の並べ替え (ショートカットと同じ: 同じグループの中で、ドラッグして好きな位置へ)
+    let dragId = null, dragSec = null;
+    const dropInfo = e => {
+      const card = e.target.closest && e.target.closest('.sncard'); if (!card || !dragId) return null;
+      const sec = card.parentNode.dataset.sec;
+      if (sec === 'recent' || sec !== dragSec || card.dataset.id === dragId) return null;
+      const r = card.getBoundingClientRect();
+      return { card, before: e.clientX < r.left + r.width / 2 };
+    };
+    const clearMarks = () => board.querySelectorAll('.dragging, .dropL, .dropR').forEach(c => c.classList.remove('dragging', 'dropL', 'dropR'));
+    board.addEventListener('dragstart', e => {
+      const card = e.target.closest && e.target.closest('.sncard');
+      if (!card || e.target !== card || card.parentNode.dataset.sec === 'recent') { e.preventDefault(); return; }
+      dragId = card.dataset.id; dragSec = card.parentNode.dataset.sec;
+      e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragId); card.classList.add('dragging');
+    });
+    board.addEventListener('dragover', e => {
+      board.querySelectorAll('.dropL, .dropR').forEach(c => c.classList.remove('dropL', 'dropR'));
+      const d = dropInfo(e); if (!d) return;
+      e.preventDefault(); d.card.classList.add(d.before ? 'dropL' : 'dropR');
+    });
+    board.addEventListener('drop', e => {
+      const d = dropInfo(e); if (!d) return;
+      e.preventDefault();
+      const from = SC.snips.findIndex(x => x.id === dragId); if (from < 0) return;
+      scPush('並べ替え');
+      const [item] = SC.snips.splice(from, 1);
+      let to = SC.snips.findIndex(x => x.id === d.card.dataset.id); if (!d.before) to++;
+      SC.snips.splice(to, 0, item);
+      dragId = null; scSave(); snRender();
+    });
+    board.addEventListener('dragend', () => { dragId = null; clearMarks(); });
+
+    // ダイアログ
+    $('snfOk').onclick = snDlgSave;
+    $('snfCancel').onclick = () => $('snDlg').close();
+    $('snDlg').addEventListener('close', () => { SC.editing = null; SN.dlgItem = null; if (SC.dirty) snRender(); });
+    $('snDlg').addEventListener('keydown', e => {            // Ctrl+Enter = 保存 (本文は、Enter で改行)
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+      if (e.ctrlKey || e.metaKey || e.target.tagName === 'INPUT') { e.preventDefault(); snDlgSave(); }
+    });
   }
 
   // ---------- 起動 ----------
+  // ---------- 再接続 (タスクとショートカットを、1回の操作でまとめて) ----------
+  function refreshReconnectUi() {   // 両方が切れているときは、ボタンの名前を「まとめて」用にする
+    const both = !$('reconnect').hidden && !$('scReconnect').hidden;
+    $('btnReconnect').textContent = $('scBtnReconnect').textContent = both ? 'すべて再接続' : '再接続';
+    $('btnRepick').textContent = $('scBtnRepick').textContent = both ? 'ファイルを選び直す (まとめて選択可)' : '同じファイルを選び直す';
+  }
+  const setReconnectMsg = t => { $('reconnectMsg').textContent = t; $('scReconnectMsg').textContent = t; };
+
+  // 許可の取り直し: 切れているファイル (タスク / ショートカット) すべてに、同時に許可を求める
+  async function reconnectAll() {
+    const ask = (kind, h) => h.requestPermission({ mode: 'readwrite' }).then(st => ({ kind, st }), err => ({ kind, err }));
+    const jobs = [];   // ユーザー操作の直後に呼ぶ必要があるため、await を挟まずに、すべて同時に開始する
+    if (!$('reconnect').hidden && handle) jobs.push(ask('tasks', handle));
+    if (!$('scReconnect').hidden && SC.handle) jobs.push(ask('sc', SC.handle));
+    if (!jobs.length) return;
+    setReconnectMsg('許可を確認しています… ブラウザの上部/アドレスバー付近に出るダイアログで「許可」を選んでください。');
+    const hint = setTimeout(() => setReconnectMsg('許可ダイアログが出ない場合、このブラウザ/開き方では許可を取れません。「ファイルを選び直す」を押してください。'), 4000);
+    let results;
+    try { results = await Promise.all(jobs); } finally { clearTimeout(hint); }
+    const failed = [];
+    for (const r of results) {
+      try {
+        if (r.err) throw r.err;
+        if (r.st !== 'granted') throw new Error('許可が得られませんでした (状態: ' + r.st + ')');
+        if (r.kind === 'tasks') { await loadFile(); showApp(); } else { await scLoadFile(); scShow('main'); scRender(); }
+      } catch (e) { failed.push((r.kind === 'tasks' ? 'タスク' : 'ショートカット') + ': ' + (e.name && e.name !== 'Error' ? e.name + ': ' : '') + e.message); }
+    }
+    if (failed.length) setReconnectMsg('再接続できませんでした — ' + failed.join(' / ') + '。「ファイルを選び直す」を試してください。');
+  }
+
+  // ファイルの選び直し: 1回のダイアログで、タスク用とショートカット用の両方を選べる (中身を見て、自動で振り分ける)
+  async function repickAll() {
+    let hs;
+    try { hs = await showOpenFilePicker({ types: pickerTypes, multiple: true, startIn: handle || SC.handle || undefined }); }
+    catch (e) { if (e.name !== 'AbortError') setReconnectMsg('ファイルを開けませんでした: ' + e.name + ': ' + e.message); return; }
+    for (const h of hs) {
+      try {
+        const text = await readHandleText(h);
+        if (!text.trim()) { alert('「' + h.name + '」は空のファイルです。種類を判別できないので、それぞれのタブの「ファイル変更」から選んでください。'); continue; }
+        if (checkDataText(text, 'tasks').ok) await useHandle(h, false);
+        else if (checkDataText(text, 'shortcuts').ok) await scUse(h, false);
+        else alert('「' + h.name + '」は、タスク用でもショートカット用でもありません。\n\n' + checkDataText(text, 'tasks').msg);
+      } catch (e) { alert('「' + h.name + '」を読み込めませんでした: ' + e.message); }
+    }
+  }
+
   async function init() {
-    bindFilters(); bindTable(); bindHead(); scInit();
+    bindFilters(); bindTable(); bindHead(); scInit(); snInit();
     $('btnNew').onclick = createFile;
     $('btnOpen').onclick = openFile;
     $('btnUndo').onclick = undo;
     $('btnRedo').onclick = redo;
     document.addEventListener('keydown', e => {
       if (!(e.ctrlKey || e.metaKey)) return;
-      const sc = currentTab === 'sc';
+      const sc = currentTab !== 'tasks';   // ショートカット・定型文のタブでは、そちらのデータの「元に戻す」
       if (sc ? $('scMain').hidden : $('app').hidden) return;
       if (e.target.closest('input:not([type=checkbox]), textarea, select')) return; // 入力中はブラウザ標準の取消
       const k = e.key.toLowerCase();
@@ -1979,23 +2496,8 @@
     });
     $('btnOther').onclick = () => { $('reconnect').hidden = true; showWelcome(); };
     $('btnChange').onclick = () => { if (editingId) { releaseLock(editingId); save(); } editingId = null; showWelcome(); };
-    $('btnReconnect').onclick = async () => {
-      try {
-        // ユーザー操作の直後に呼ぶ必要があるため、事前の await を挟まず直接 requestPermission する
-        $('reconnectMsg').textContent = '許可を確認しています… ブラウザの上部/アドレスバー付近に出るダイアログで「許可」を選んでください。';
-        const hint = setTimeout(() => { $('reconnectMsg').textContent = '許可ダイアログが出ない場合、このブラウザ/開き方では許可を取れません。「同じファイルを選び直す」を押してください。'; }, 4000);
-        let st;
-        try { st = await handle.requestPermission({ mode: 'readwrite' }); } finally { clearTimeout(hint); }
-        if (st !== 'granted') return showReconnect(`許可が得られませんでした(状態: ${st})。「同じファイルを選び直す」を試してください。`);
-        await loadFile(); showApp();
-      } catch (e) { showReconnect(`再接続に失敗しました: ${e.name}: ${e.message}。「同じファイルを選び直す」を試してください。`); }
-    };
-    $('btnRepick').onclick = async () => {
-      try {
-        const [h] = await showOpenFilePicker({ types: pickerTypes, startIn: handle || undefined });
-        await useHandle(h, false);
-      } catch (e) { if (e.name !== 'AbortError') showReconnect(`読み込みに失敗しました: ${e.name}: ${e.message}`); }
-    };
+    $('btnReconnect').onclick = reconnectAll;
+    $('btnRepick').onclick = repickAll;
     window.addEventListener('resize', () => { if (!$('app').hidden) applyWidths(); });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) checkExternalChange(); });
     window.addEventListener('focus', checkExternalChange);
