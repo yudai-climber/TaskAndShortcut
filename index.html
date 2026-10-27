@@ -176,6 +176,9 @@
   .tgrid label, .tgrid .lbl { display:block; font-size:12px; color:var(--muted); }
   .tgrid input, .tgrid select, .tgrid textarea { width:100%; margin-top:3px; font-size:14px; }
   .tgrid .lrow input { margin-top:0; }
+  .tgrid .inl { display:flex; gap:6px; align-items:center; margin-top:3px; }
+  .tgrid .inl input { flex:1; margin-top:0; min-width:0; }
+  .tgrid .inl button { white-space:nowrap; }
   textarea.scquick { resize:vertical; font-family:inherit; min-height:42px; }
   .snprev { font-size:12px; color:var(--muted); white-space:pre-wrap; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; background:var(--stripe); border-radius:6px; padding:6px 8px; }
   dialog#snDlg { border:1px solid var(--line); border-radius:10px; padding:18px 20px; width:min(640px, 94vw); background:var(--card); color:var(--text); }
@@ -1524,7 +1527,7 @@
         <label class="wide">タスク名<input type="text" id="e_name" value="${esc(t.name)}" placeholder="タスク名"></label>
         <label>起票者<input type="text" id="e_creator" value="${esc(t.creator || '')}"></label>
         <label>起票日<input type="date" id="e_created" value="${esc(t.created)}"></label>
-        <label>着手日<input type="date" id="e_start" value="${esc(t.start)}"></label>
+        <label>着手日<div class="inl"><input type="date" id="e_start" value="${esc(t.start)}"><button type="button" id="tdStart" title="着手日を本日にし、ステータスを「進行中」にします"${t.start ? ' hidden' : ''}>着手開始</button></div></label>
         <label>期日<input type="date" id="e_due" value="${esc(t.due)}"></label>
         <label>優先度<select id="e_priority">${opts(PRIORITIES, t.priority)}</select></label>
         <label>ステータス<select id="e_status">${opts(STATUSES, t.status)}</select></label>
@@ -1533,6 +1536,11 @@
         <label class="wide">備考<textarea id="e_note" rows="3">${esc(t.note)}</textarea></label>
       </div>
       <div class="dlgbtns"><button type="button" id="tdCancel">取消</button><button type="button" class="primary" id="tdOk">保存</button></div>`;
+  }
+  function taskDlgStart() {   // 「着手開始」: 確認のあと、着手日を本日・ステータスを進行中にする (保存は「保存」ボタン)
+    const name = $('e_name').value.trim() || '(無題)';
+    if (!confirm(`「${name}」に着手しますか？\n着手日を本日にし、ステータスを「進行中」にします。`)) return;
+    $('e_start').value = localISO(today()); $('e_status').value = '進行中'; $('tdStart').hidden = true;
   }
   async function openTaskDialog(t, isNew) {
     if (!isNew && !(await acquireLock(t.id))) return;
@@ -1701,7 +1709,9 @@
       else if (b.dataset.a === 'lrm') linkRemoveRow(b);
       else if (b.id === 'tdOk') taskDlgSave();
       else if (b.id === 'tdCancel') $('taskDlg').close();
+      else if (b.id === 'tdStart') taskDlgStart();
     });
+    $('taskDlg').addEventListener('change', e => { if (e.target.id === 'e_start' && $('tdStart')) $('tdStart').hidden = !!e.target.value; });   // 着手日が入ったら、ボタンを隠す
     $('taskDlg').addEventListener('keydown', e => {   // Enter (1行の欄) / Ctrl+Enter = 保存
       if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
       if (e.ctrlKey || e.metaKey || e.target.tagName === 'INPUT') { e.preventDefault(); taskDlgSave(); }
