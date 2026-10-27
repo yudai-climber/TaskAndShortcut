@@ -183,6 +183,12 @@
   #snDlg h3 { margin:0 0 4px; font-size:16px; }
   #snDlg label { display:block; font-size:12px; color:var(--muted); margin-top:10px; }
   #snDlg input, #snDlg textarea { width:100%; margin-top:3px; font-size:14px; }
+  /* スクロールしても、画面上部 (ヘッダー・タブ・操作バー) を固定表示する。高さは JS で測って、--s1 / --s2 / --s3 に入れる */
+  header { position:sticky; top:0; z-index:40; }
+  .tabs { position:sticky; top:var(--s1, 0px); z-index:39; background:var(--bg); }
+  .stickybar { position:sticky; top:var(--s2, 0px); z-index:30; background:var(--bg); display:flow-root; }
+  .tablewrap { max-height:max(320px, calc(100vh - var(--s3, 220px) - 16px)); }   /* 表は画面内でスクロールさせ、列見出しも固定する */
+  @media (max-width: 800px) { .stickybar { position:static; } .tablewrap { max-height:none; } }
   .chip.hold { color:var(--muted); border-color:var(--muted); }
   .remain.hold { color:var(--muted); font-weight:400; }
   tr.hold td { color:var(--muted); }
@@ -292,6 +298,7 @@
   </div>
 
   <div id="app" hidden>
+    <div class="stickybar" id="taskBar">
     <div class="summary" id="summary"></div>
     <div class="filters">
       <div class="search">
@@ -320,6 +327,7 @@
       <span class="segs" title="表示の切り替え"><button id="vwList" class="on">☰ 一覧</button><button id="vwBoard">▦ カンバン</button></span>
       <span class="count" id="count"></span>
       <button class="primary" id="btnAdd">＋ タスク追加</button>
+    </div>
     </div>
     <div class="adv" id="colPanel" hidden>
       <div class="adv-head"><b>表示項目の設定</b><span>チェックで表示/非表示を切り替えます。並び順は、一覧の見出しをドラッグして変更できます。設定はデータファイルに保存されます。</span><button id="btnColClose" class="ghost">閉じる</button></div>
@@ -358,6 +366,7 @@
       </div>
     </div>
     <div id="scMain" hidden>
+      <div class="stickybar" id="scBar">
       <div class="scbar">
         <input type="text" id="scQuick" class="scquick" placeholder="＋ リンクやパスを貼り付けて Enter で追加 (例: C:&#92;…&#92;売上.xlsx / https://…)" autocomplete="off">
         <button id="scBtnAdd">詳しく入力して追加</button>
@@ -367,6 +376,7 @@
         <select id="scSort" title="手動: カードをドラッグして、好きな順に並べ替えられます (同じグループの中で)"><option value="added">手動 (ドラッグで並べ替え)</option><option value="name">名前順</option><option value="recent">最近開いた順</option></select>
         <div id="scCats" class="scchips"></div>
         <span class="count" id="scCount"></span>
+      </div>
       </div>
       <div id="scBoard"></div>
       <div class="empty" id="scEmpty" hidden></div>
@@ -391,6 +401,7 @@
       </div>
     </div>
     <div id="snMain" hidden>
+      <div class="stickybar" id="snBar">
       <div class="scbar">
         <textarea id="snQuick" class="scquick" rows="1" placeholder="＋ 定型文をここに貼り付けて Enter で追加 (改行は Shift+Enter)"></textarea>
         <button id="snBtnAdd">詳しく入力して追加</button>
@@ -400,6 +411,7 @@
         <select id="snSort" title="並び順"><option value="added">手動 (ドラッグで並べ替え)</option><option value="name">名前順</option><option value="recent">最近使った順</option></select>
         <div id="snCats" class="scchips"></div>
         <span class="count" id="snCount"></span>
+      </div>
       </div>
       <div id="snBoard"></div>
       <div class="empty" id="snEmpty" hidden></div>
@@ -1785,6 +1797,7 @@
     $('tabTasks').hidden = t !== 'tasks'; $('tabSc').hidden = t !== 'sc'; $('tabSn').hidden = t !== 'sn';
     document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
     try { localStorage.setItem('taskTab', t); } catch {}
+    setTimeout(layoutSticky, 0);
     if (t === 'sc') scRender(); else if (t === 'sn') snRender(); else if (!$('app').hidden) render();   // 隠れている間は列幅が計算できないので、戻ったときに描き直す
   }
   function scShow(which) {
@@ -2432,6 +2445,24 @@
     });
   }
 
+  // ---------- 画面上部の固定表示 ----------
+  function layoutSticky() {   // ヘッダー・タブ・操作バーの高さを測って、固定表示の位置 (--s1: タブの top / --s2: 操作バーの top / --s3: その下端) を決める
+    const rs = document.documentElement.style;
+    const hh = document.querySelector('header').offsetHeight, tabsH = $('tabs').offsetHeight;
+    const bar = ['taskBar', 'scBar', 'snBar'].map($).find(b => b && b.offsetParent !== null);
+    rs.setProperty('--s1', hh + 'px');
+    rs.setProperty('--s2', (hh + tabsH) + 'px');
+    rs.setProperty('--s3', (hh + tabsH + (bar ? bar.offsetHeight : 0)) + 'px');
+  }
+  function initSticky() {
+    layoutSticky();
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(layoutSticky);
+      [document.querySelector('header'), $('tabs'), $('taskBar'), $('scBar'), $('snBar')].forEach(e => e && ro.observe(e));
+    }
+    window.addEventListener('resize', layoutSticky);
+  }
+
   // ---------- 起動 ----------
   // ---------- 再接続 (タスクとショートカットを、1回の操作でまとめて) ----------
   function refreshReconnectUi() {   // 両方が切れているときは、ボタンの名前を「まとめて」用にする
@@ -2480,7 +2511,7 @@
   }
 
   async function init() {
-    bindFilters(); bindTable(); bindHead(); scInit(); snInit();
+    bindFilters(); bindTable(); bindHead(); scInit(); snInit(); initSticky();
     $('btnNew').onclick = createFile;
     $('btnOpen').onclick = openFile;
     $('btnUndo').onclick = undo;
