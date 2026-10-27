@@ -28,9 +28,9 @@
   input, select, textarea { border:1px solid var(--line); background:var(--card); border-radius:5px; padding:4px 6px; }
   input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:-1px; }
 
-  #welcome { max-width:520px; margin:60px auto; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:28px; text-align:center; }
-  #welcome p { color:var(--muted); }
-  #welcome .row { display:flex; gap:10px; justify-content:center; margin-top:16px; }
+  #welcome, #scWelcome { max-width:520px; margin:60px auto; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:28px; text-align:center; }
+  #welcome p, #scWelcome p { color:var(--muted); }
+  #welcome .row, #scWelcome .row { display:flex; gap:10px; justify-content:center; margin-top:16px; }
   [hidden] { display:none !important; }
   .banner { background:#fff7e6; border:1px solid #f5d28a; color:#7a4b00; padding:2px 8px; border-radius:6px; font-size:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
   .banner button { padding:2px 8px; font-size:12px; }
@@ -88,6 +88,49 @@
   tr.locked td { opacity:.6; }
   .lockinfo { cursor:pointer; color:var(--warn); font-size:12px; white-space:normal; }
   .watch { font-size:11px; color:var(--muted); }
+  .tabs { display:flex; gap:4px; margin:0 0 12px; border-bottom:1px solid var(--line); }
+  .tabs button { border:0; border-bottom:3px solid transparent; border-radius:0; background:transparent; padding:8px 18px; font-weight:600; color:var(--muted); }
+  .tabs button.on { color:var(--accent); border-bottom-color:var(--accent); }
+  body.tab-sc .task-only { display:none !important; }
+  body:not(.tab-sc) .sc-only { display:none !important; }
+  .scbanner { margin-bottom:12px; }
+  a.btn, button.btn { display:inline-block; border:1px solid var(--line); border-radius:6px; padding:3px 10px; font-size:12px; text-decoration:none; color:var(--text); background:var(--card); white-space:nowrap; margin:1px 2px 1px 0; }
+  a.btn:hover, button.btn:hover { border-color:var(--accent); color:var(--accent); }
+  td.memo { white-space:pre-wrap; }
+  td.scurl { color:var(--muted); font-size:12px; }
+  #scTbl { min-width:960px; width:100%; }
+  .scbar { display:flex; gap:8px; margin-bottom:10px; }
+  .scquick { flex:1; padding:10px 14px; font-size:15px; border-radius:8px; }
+  .scbar2 { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:14px; }
+  .scchips { display:flex; flex-wrap:wrap; gap:6px; }
+  .scchip { border-radius:14px; padding:2px 12px; font-size:12px; }
+  .scchip.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .scsec { margin-bottom:22px; }
+  .scsec h3 { font-size:13px; color:var(--muted); margin:0 0 8px; font-weight:700; }
+  .scsec h3 span { font-weight:400; margin-left:4px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:10px; }
+  .sccard { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--c, #64748b); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .sccard:hover { border-color:var(--accent); border-left-color:var(--c, #64748b); }
+  .sccard.pinned { box-shadow:0 0 0 1px var(--warn) inset; }
+  .sctop { display:flex; align-items:center; gap:8px; }
+  .scic { font-size:22px; line-height:1; }
+  .scname { font-weight:700; flex:1; overflow-wrap:anywhere; }
+  .scmore { border:0; background:transparent; font-size:18px; padding:0 6px; color:var(--muted); }
+  .scnote { font-size:12px; white-space:pre-wrap; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .scul { font-size:11px; color:var(--muted); overflow-wrap:anywhere; }
+  .scwarn { font-size:11px; color:var(--warn); cursor:help; }
+  .scacts { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  a.btn.pri, button.btn.pri { background:var(--accent); border-color:var(--accent); color:#fff; }
+  a.btn.pri:hover { color:#fff; opacity:.9; }
+  .scmenu button { display:block; width:100%; text-align:left; border:0; background:transparent; padding:6px 10px; border-radius:5px; }
+  .scmenu button:hover { background:rgba(37,99,235,.15); }
+  .scmenu hr { border:0; border-top:1px solid var(--line); margin:4px 0; }
+  dialog#scDlg { border:1px solid var(--line); border-radius:10px; padding:18px 20px; width:min(520px, 92vw); background:var(--card); color:var(--text); }
+  dialog#scDlg::backdrop { background:rgba(0,0,0,.4); }
+  #scDlg h3 { margin:0 0 4px; font-size:16px; }
+  #scDlg label { display:block; font-size:12px; color:var(--muted); margin-top:10px; }
+  #scDlg input, #scDlg textarea { width:100%; margin-top:3px; font-size:14px; }
+  .dlgbtns { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
   .chip.hold { color:var(--muted); border-color:var(--muted); }
   .remain.hold { color:var(--muted); font-weight:400; }
   tr.hold td { color:var(--muted); }
@@ -161,11 +204,22 @@
     <button id="btnUndo" title="元に戻す (Ctrl+Z)" disabled>↶ 元に戻す</button>
     <button id="btnRedo" title="やり直す (Ctrl+Y)" disabled>↷ やり直す</button>
   </span>
+  <span id="scFile" class="hint sc-only" hidden></span>
+  <button id="scBtnChange" class="sc-only" hidden>ファイル変更</button>
+  <span class="hist sc-only" id="scHist" hidden>
+    <button id="scBtnUndo" title="元に戻す (Ctrl+Z)" disabled>↶ 元に戻す</button>
+    <button id="scBtnRedo" title="やり直す (Ctrl+Y)" disabled>↷ やり直す</button>
+  </span>
   <span id="saveState"></span>
   <span id="watchState" class="watch" title="他の人の変更を確認している状態です"></span>
 </header>
 
 <main>
+  <nav class="tabs" id="tabs">
+    <button data-tab="tasks" class="on">📋 タスク</button>
+    <button data-tab="sc">🔖 ショートカット</button>
+  </nav>
+  <div id="tabTasks">
   <div id="welcome" hidden>
     <h2>データファイルを選択してください</h2>
     <p>OneDrive などのフォルダに JSON ファイルとして保存されます。<br>
@@ -228,6 +282,47 @@
       <div class="empty" id="empty" hidden>該当するタスクがありません</div>
       <div class="moreRows" id="moreRows" hidden></div>
     </div>
+  </div>
+  </div><!-- /tabTasks -->
+
+  <div id="tabSc" hidden>
+    <div id="scWelcome" hidden>
+      <h2>ショートカット用のデータファイルを選択してください</h2>
+      <p>タスクとは別の JSON ファイルに保存されます。<br>一度選ぶと、次回以降は自動で同じファイルを開きます。</p>
+      <div class="row">
+        <button class="primary" id="scBtnNew">新規ファイルを作成</button>
+        <button id="scBtnOpen">既存ファイルを開く</button>
+      </div>
+    </div>
+    <div id="scReconnect" class="banner scbanner" hidden>
+      <span id="scReconnectMsg">前回のファイルを開き直してください。</span>
+      <button class="primary" id="scBtnRepick">同じファイルを選び直す</button>
+      <button id="scBtnOther">別のファイルを選ぶ</button>
+    </div>
+    <div id="scMain" hidden>
+      <div class="scbar">
+        <input type="text" id="scQuick" class="scquick" placeholder="＋ リンクやパスを貼り付けて Enter で追加 (例: C:&#92;…&#92;売上.xlsx / https://…)" autocomplete="off">
+        <button id="scBtnAdd">詳しく入力して追加</button>
+      </div>
+      <div class="scbar2">
+        <input type="search" id="scSearch" placeholder="🔍 検索 (Enter で先頭を開く / 「/」で移動)" style="width:320px">
+        <select id="scSort" title="並び順"><option value="added">追加順</option><option value="name">名前順</option><option value="recent">最近開いた順</option></select>
+        <div id="scCats" class="scchips"></div>
+        <span class="count" id="scCount"></span>
+        <span id="scState" class="watch"></span>
+      </div>
+      <div id="scBoard"></div>
+      <div class="empty" id="scEmpty" hidden></div>
+    </div>
+    <dialog id="scDlg">
+      <h3 id="scDlgTitle">ショートカットを追加</h3>
+      <label>ファイル名 <input type="text" id="sfName" placeholder="空欄ならリンクから付けます"></label>
+      <label>リンク / パス <input type="text" id="sfUrl" placeholder="https://… または C:&#92;フォルダ&#92;ファイル"></label>
+      <label>メモ <textarea id="sfNote" rows="3"></textarea></label>
+      <label>カテゴリ (省略可) <input type="text" id="sfCat" list="scCatList" placeholder="例: 経理"></label>
+      <datalist id="scCatList"></datalist>
+      <div class="dlgbtns"><button type="button" id="sfCancel">取消</button><button type="button" class="primary" id="sfOk">保存</button></div>
+    </dialog>
   </div>
 </main>
 
@@ -375,11 +470,36 @@
     return { tasks: arr, presets: (obj && data.presets) || [], settings: obj ? data.settings : null, locks: (obj && data.locks) || {}, deleted: (obj && data.deleted) || {} };
   }
 
+  // ---------- 選んだ JSON ファイルの確認 (間違えて別のファイルを開いて、壊してしまうのを防ぐ) ----------
+  const KIND_LABEL = { tasks: 'タスク', shortcuts: 'ショートカット' };
+  function checkDataText(text, kind) {   // kind: 'tasks' | 'shortcuts'
+    if (!text.trim()) return { ok: true, empty: true };
+    let d;
+    try { d = JSON.parse(text); } catch (e) { return { ok: false, msg: 'JSON として読み込めません (' + e.message + ')' }; }
+    if (d === null || typeof d !== 'object') return { ok: false, msg: 'JSON の形式が想定と異なります' };
+    const other = kind === 'tasks' ? 'shortcuts' : 'tasks';
+    let arr = d;
+    if (!Array.isArray(d)) {
+      if (d.kind && d.kind !== kind) return { ok: false, msg: 'これは' + (KIND_LABEL[d.kind] || d.kind) + '用のファイルです' };
+      if (!Array.isArray(d[kind])) {
+        return { ok: false, msg: Array.isArray(d[other]) ? 'これは' + KIND_LABEL[other] + '用のファイルのようです' : KIND_LABEL[kind] + 'のデータ (' + kind + ') が見つかりません。別の JSON ファイルを選んでいませんか？' };
+      }
+      arr = d[kind];
+    }
+    if (arr.some(x => !x || typeof x !== 'object' || Array.isArray(x))) return { ok: false, msg: KIND_LABEL[kind] + 'の形式ではない項目が含まれています' };
+    const keys = kind === 'tasks' ? ['name', 'created', 'status', 'due', 'priority'] : ['name', 'url', 'note'];
+    if (arr.length && !arr.slice(0, 20).some(x => keys.some(k => k in x))) return { ok: false, msg: KIND_LABEL[kind] + 'の項目 (' + keys.join('・') + ') が見つかりません' };
+    return { ok: true, count: arr.length };
+  }
+  async function readHandleText(h) { const f = await h.getFile(); return f.text(); }
+
   async function loadFile() {
     let f, text;
     await retry(async () => { f = await handle.getFile(); text = await f.text(); });
     lastModified = f.lastModified;
     if (!text.trim()) { tasks = []; presets = []; locks = {}; deleted = {}; return; }
+    const chk = checkDataText(text, 'tasks');
+    if (!chk.ok) throw new Error(chk.msg);
     const d = parseData(text);
     tasks = d.tasks; presets = d.presets; locks = d.locks; deleted = d.deleted;
     // 表示設定は、このブラウザに保存済みならそちらを優先 (人によって見た目が違ってよい)。無ければファイルの設定を使う
@@ -420,6 +540,8 @@
     if (f.lastModified === lastModified) return null;
     const text = await f.text();
     if (!text.trim()) { lastModified = f.lastModified; return null; }
+    const chk = checkDataText(text, 'tasks');
+    if (!chk.ok) throw new Error('ファイルの内容が想定と異なります: ' + chk.msg);   // 想定外の内容のときは、取り込みも上書きもしない
     const res = mergeRemote(parseData(text));
     lastModified = f.lastModified;
     if (res.pulled) { resetHistory(); onRemoteMerged(); }
@@ -499,7 +621,7 @@
         await retry(async () => {
           await pullRemote();   // 書き込む直前に最新を取り込み、他の人の変更を上書きしない
           const w = await handle.createWritable();
-          await w.write(JSON.stringify({ version: 2, tasks: tasks.filter(x => x.id !== newId), presets, settings: layoutSettings(), locks: pruneLocks(), deleted: pruneDeleted() }, null, 2));
+          await w.write(JSON.stringify({ version: 2, kind: 'tasks', tasks: tasks.filter(x => x.id !== newId), presets, settings: layoutSettings(), locks: pruneLocks(), deleted: pruneDeleted() }, null, 2));
           await w.close();
         });
         presetsDirty = false;
@@ -521,11 +643,20 @@
   }
 
   async function useHandle(h, isNew) {
+    const text = await readHandleText(h);   // 切り替える前に、選んだファイルの中身を確認する
+    if (isNew) {
+      if (text.trim() && !confirm('「' + h.name + '」には、すでに内容があります。\n新規作成として使うと、この内容は空の状態で上書きされ、元に戻せません。\n続けますか？')) return false;
+    } else {
+      const chk = checkDataText(text, 'tasks');
+      if (!chk.ok) { alert('このファイルは、タスク用のデータとして使えません。\n\n' + chk.msg + '\n\n(選択を取り消しました。これまでのファイルのままです)'); return false; }
+      if (chk.empty && !confirm('「' + h.name + '」は空のファイルです。\nタスク用のデータファイルとして使いますか？')) return false;
+    }
     handle = h;
     await idb.set('handle', h);
     editingId = newId = null; resetHistory(); locks = {}; deleted = {};
     if (isNew) { tasks = []; presets = []; await save(); } else { await loadFile(); }
     showApp();
+    return true;
   }
 
   const pickerTypes = [{ description: 'タスクデータ (JSON)', accept: { 'application/json': ['.json'] } }];
@@ -733,6 +864,8 @@
   }
   const urlToInput = u => isFileUrl(u) ? fileUrlToPath(u) : u;
   function normalizeLinkUrl(u) {
+    const dav = u.match(/^\\\\([^\\@\s]+)@SSL(?:\\DavWWWRoot)?((?:\\.*)?)$/i);
+    if (dav) return 'https://' + dav[1] + encodeURI(dav[2].replace(/\\/g, '/'));
     if (/^([a-zA-Z]:[\\/]|\\\\[^\\])/.test(u)) return pathToFileUrl(u);
     if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) return 'https://' + u;
     return u;
@@ -762,7 +895,7 @@
   }
   // リンク編集: 「別名」「URL」を行ごとの入力欄で扱う
   const linkRow = (l = { title: '', url: '' }) =>
-    `<div class="lrow"><input type="text" class="l-title" placeholder="別名(省略可)" value="${esc(l.title)}"><input type="text" class="l-url" placeholder="https://… または C:\フォルダ\ファイル" value="${esc(urlToInput(l.url))}"><button type="button" class="lrm" data-a="lrm" title="この行を削除">×</button></div>`;
+    `<div class="lrow"><input type="text" class="l-title" placeholder="別名(省略可)" value="${esc(l.title)}"><input type="text" class="l-url" placeholder="https://… または C:&#92;フォルダ&#92;ファイル" value="${esc(urlToInput(l.url))}"><button type="button" class="lrm" data-a="lrm" title="この行を削除">×</button></div>`;
   const linkEdit = t => `<td><div class="linkedit">${((t.links || []).length ? t.links : [undefined]).map(linkRow).join('')}<button type="button" class="ladd" data-a="ladd">＋ リンク追加</button></div></td>`;
   const pinCell = t => `<td class="pin"><button type="button" class="star${t.pinned ? ' on' : ''}" data-a="pin" title="${t.pinned ? 'ピン留めを外す' : 'ピン留めする(先頭に固定)'}">📌</button></td>`;
   const effortCell = t => `<td><input type="number" class="effort" data-f="effort" min="0" step="0.5" value="${esc(t.effort ?? '')}" placeholder="h"></td>`;
@@ -1342,19 +1475,455 @@
     } catch (e) { console.warn('Worker のタイマーは使えません', e); }
   }
 
+  // ---------- ショートカット一覧 (タスクとは別のデータファイル) ----------
+  const SC_OFFICE = [
+    [/\.(xlsx|xlsm|xlsb|xls|csv)$/i, 'ms-excel', 'Excel'],
+    [/\.(docx|docm|doc|rtf)$/i, 'ms-word', 'Word'],
+    [/\.(pptx|pptm|ppt|ppsx|pps)$/i, 'ms-powerpoint', 'PowerPoint'],
+    [/\.(vsdx|vsdm|vsd)$/i, 'ms-visio', 'Visio'],
+  ];
+  const OFFICE_APPS = { excel: ['ms-excel', 'Excel'], word: ['ms-word', 'Word'], powerpoint: ['ms-powerpoint', 'PowerPoint'], visio: ['ms-visio', 'Visio'] };
+  const OFFICE_MARK = { x: 'excel', w: 'word', p: 'powerpoint', v: 'visio' };   // SharePoint / OneDrive の共有リンクの印 (/:x:/ = Excel など)
+  // Office のファイルかどうかを判定する。override は手動の指定 ('excel' など / 'none' = Office として扱わない)
+  function officeKind(url, override) {
+    if (override === 'none') return null;
+    if (OFFICE_APPS[override]) return { scheme: OFFICE_APPS[override][0], label: OFFICE_APPS[override][1] };
+    let p = url, f = '';
+    try { const u = new URL(url); p = decodeURIComponent(u.pathname); f = decodeURIComponent(u.searchParams.get('file') || ''); } catch {}
+    const mark = p.match(/^\/:([xwpv]):\//i);                       // 共有リンク: ファイル名が見えなくても、印で種類が分かる
+    if (mark) return { scheme: OFFICE_APPS[OFFICE_MARK[mark[1].toLowerCase()]][0], label: OFFICE_APPS[OFFICE_MARK[mark[1].toLowerCase()]][1] };
+    let host = ''; try { host = new URL(url).hostname; } catch {}
+    const short = /^(1drv\.ms|([\w-]+\.)?1drv\.com)$/i.test(host) && p.match(/^\/([xwpv])\//i);   // 1drv.ms/x/… の短い共有リンク
+    if (short) { const a = OFFICE_APPS[OFFICE_MARK[short[1].toLowerCase()]]; return { scheme: a[0], label: a[1] }; }
+    for (const [re, scheme, label] of SC_OFFICE) if (re.test(p) || re.test(f)) return { scheme, label };   // 拡張子 (Doc.aspx?file=… も見る)
+    return null;
+  }
+  // Office アプリに渡す URL。クラウドの共有リンク (/:x:/r/…) は、ファイル本体の URL に直す。web=1 は「ブラウザで開く」指定なので外す
+  function officeOpenUrl(url) {
+    try {
+      const u = new URL(url);
+      if (/(^|\.)sharepoint\.com$/i.test(u.hostname)) {
+        const m = u.pathname.match(/^\/:[a-z]:\/r(\/.*)$/i);
+        if (m) return u.origin + m[1];
+        u.searchParams.delete('web');
+        return u.toString();
+      }
+    } catch {}
+    return url;
+  }
+  const SC = { handle: null, items: [], deleted: {}, last: 0, editing: null, newId: null, saving: Promise.resolve(), checking: false, dirty: false, q: '' };
+  const scUid = () => 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const scState = (msg, bad) => { const e = $('scState'); e.textContent = msg; e.style.color = bad ? 'var(--danger)' : 'var(--muted)'; };
+  const nameFromUrl = url => { try { const u = new URL(url); return decodeURIComponent(u.pathname.split('/').filter(Boolean).pop() || u.hostname); } catch { return url; } };
+
+  let currentTab = 'tasks';
+  function setTab(t) {
+    currentTab = t;
+    document.body.classList.toggle('tab-sc', t === 'sc');
+    $('tabTasks').hidden = t === 'sc'; $('tabSc').hidden = t !== 'sc';
+    document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+    try { localStorage.setItem('taskTab', t); } catch {}
+    if (t === 'sc') scRender(); else if (!$('app').hidden) render();   // 隠れている間は列幅が計算できないので、戻ったときに描き直す
+  }
+  function scShow(which) {
+    $('scWelcome').hidden = which !== 'welcome'; $('scReconnect').hidden = which !== 'reconnect'; $('scMain').hidden = which !== 'main';
+    ['scFile', 'scBtnChange', 'scHist'].forEach(id => { $(id).hidden = which !== 'main'; });   // ヘッダーのファイル名・変更・戻る/進むは、一覧の表示中だけ
+  }
+
+  // ショートカットの「元に戻す / やり直す」
+  SC.undo = []; SC.redo = [];
+  const scSnap = () => JSON.stringify(SC.items.filter(x => x.id !== SC.newId));
+  function scHist() {
+    $('scBtnUndo').disabled = !SC.undo.length; $('scBtnRedo').disabled = !SC.redo.length;
+    $('scBtnUndo').title = SC.undo.length ? '元に戻す: ' + SC.undo[SC.undo.length - 1].label + ' (Ctrl+Z)' : '元に戻す (Ctrl+Z)';
+  }
+  function scPush(label) { SC.undo.push({ label, snap: scSnap() }); if (SC.undo.length > 100) SC.undo.shift(); SC.redo = []; scHist(); }
+  function scRestore(from, to, verb) {
+    const e = from.pop(); if (!e) return;
+    to.push({ label: e.label, snap: scSnap() });
+    const prev = new Map(SC.items.map(x => [x.id, JSON.stringify(x)]));
+    SC.items = JSON.parse(e.snap);
+    const now = Date.now(), ids = new Set(SC.items.map(x => x.id));
+    SC.items.forEach(x => { if (prev.get(x.id) !== JSON.stringify(x)) x.modAt = now; });   // 変わったものは、他の人の画面でも新しい内容として扱われる
+    prev.forEach((_, id) => { if (!ids.has(id)) SC.deleted[id] = now; });
+    SC.editing = SC.newId = null;
+    scSave(); scRender(); scHist(); scState(verb + 'しました (' + e.label + ')');
+  }
+  const scUndo = () => scRestore(SC.undo, SC.redo, '元に戻');
+  const scRedo = () => scRestore(SC.redo, SC.undo, 'やり直');
+
+  async function scLoadFile() {
+    let f, text;
+    await retry(async () => { f = await SC.handle.getFile(); text = await f.text(); });
+    SC.last = f.lastModified;
+    if (!text.trim()) { SC.items = []; SC.deleted = {}; return; }
+    const chk = checkDataText(text, 'shortcuts');
+    if (!chk.ok) throw new Error(chk.msg);
+    const d = JSON.parse(text);
+    SC.items = Array.isArray(d) ? d : (d.shortcuts || []);
+    SC.deleted = (!Array.isArray(d) && d.deleted) || {};
+  }
+  async function scUse(h, isNew) {
+    const text = await readHandleText(h);   // 切り替える前に、選んだファイルの中身を確認する
+    if (isNew) {
+      if (text.trim() && !confirm('「' + h.name + '」には、すでに内容があります。\n新規作成として使うと、この内容は空の状態で上書きされ、元に戻せません。\n続けますか？')) return;
+    } else {
+      const chk = checkDataText(text, 'shortcuts');
+      if (!chk.ok) { alert('このファイルは、ショートカット用のデータとして使えません。\n\n' + chk.msg + '\n\n(選択を取り消しました。これまでのファイルのままです)'); return; }
+      if (chk.empty && !confirm('「' + h.name + '」は空のファイルです。\nショートカット用のデータファイルとして使いますか？')) return;
+    }
+    SC.handle = h; await idb.set('scHandle', h); SC.editing = SC.newId = null; SC.undo = []; SC.redo = []; scHist();
+    if (isNew) { SC.items = []; SC.deleted = {}; await scSave(); } else await scLoadFile();
+    scShow('main'); scRender();
+  }
+
+  // 他の人の保存内容をマージ (レコード単位で、modAt の新しいほう)。編集中の行は書き換えない
+  function scMerge(d) {
+    const arr = Array.isArray(d) ? d : (d.shortcuts || []), dl = (!Array.isArray(d) && d.deleted) || {};
+    for (const [id, at] of Object.entries(dl)) if (!(SC.deleted[id] >= at)) SC.deleted[id] = at;
+    const ts = x => x.modAt || 0;
+    const local = new Map(SC.items.map(x => [x.id, x])), remote = new Map(arr.map(x => [x.id, x]));
+    const out = [];
+    for (const [id, r] of remote) {
+      const l = local.get(id);
+      if (id === SC.editing && l) { out.push(l); continue; }
+      if (SC.deleted[id] >= ts(r)) continue;
+      out.push(l && ts(l) > ts(r) ? l : r);
+    }
+    for (const [id, l] of local) { if (!remote.has(id) && !(SC.deleted[id] >= ts(l))) out.push(l); }
+    const before = JSON.stringify(SC.items);
+    SC.items = out;
+    return JSON.stringify(out) !== before;
+  }
+  async function scPull() {
+    const f = await SC.handle.getFile(); if (f.lastModified === SC.last) return;
+    const text = await f.text();
+    if (text.trim()) { const chk = checkDataText(text, 'shortcuts'); if (!chk.ok) throw new Error('ファイルの内容が想定と異なります: ' + chk.msg); }
+    const changed = text.trim() ? scMerge(JSON.parse(text)) : false;
+    SC.last = f.lastModified;
+    if (changed) {
+      SC.undo = []; SC.redo = []; scHist();   // 他の人の更新を取り込んだら、巻き戻しの履歴は破棄 (古い状態へ戻して上書きしないため)
+      const a = document.activeElement;
+      if (SC.editing || (a && a.closest && a.closest('#scBoard'))) SC.dirty = true; else scRender();   // 入力中は終わってから反映
+    }
+  }
+  function scSave() {
+    scState('保存中…');
+    SC.saving = SC.saving.then(async () => {
+      try {
+        await retry(async () => {
+          await scPull();   // 書き込む直前に最新を取り込む
+          const old = Date.now() - 30 * 864e5; for (const id of Object.keys(SC.deleted)) if (SC.deleted[id] < old) delete SC.deleted[id];
+          const w = await SC.handle.createWritable();
+          await w.write(JSON.stringify({ version: 1, kind: 'shortcuts', shortcuts: SC.items.filter(x => x.id !== SC.newId), deleted: SC.deleted }, null, 2));
+          await w.close();
+        });
+        try { SC.last = (await SC.handle.getFile()).lastModified; } catch { /* 保存自体は成功 */ }
+        scState('保存しました ' + new Date().toLocaleTimeString());
+      } catch (e) { console.error(e); scState('保存失敗: ' + e.message, true); }
+    });
+    return SC.saving;
+  }
+  async function scCheck() {   // 1秒おきに、ファイルが他の人に更新されていないか確認
+    if (!SC.handle || $('scMain').hidden || SC.checking) return;
+    SC.checking = true;
+    try {
+      if (await SC.handle.queryPermission({ mode: 'readwrite' }) !== 'granted') return;
+      await SC.saving;
+      await scPull();
+    } catch (e) { console.warn(e); } finally { SC.checking = false; }
+  }
+
+  // 個人の OneDrive の共有リンク (1drv.ms など) からは、Office アプリを直接開く URL を作れない
+  const isConsumerShare = u => { try { return /^(1drv\.ms|onedrive\.live\.com|([\w-]+\.)?1drv\.com)$/i.test(new URL(u).hostname); } catch { return false; } };
+  // SharePoint / OneDrive for Business の「フォルダ」の URL か判定する。エクスプローラー用のパスも返す
+  function spFolder(url) {
+    try {
+      const u = new URL(url);
+      if (!/(^|\.)sharepoint\.com$/i.test(u.hostname) || /^\/:[a-z]:\//i.test(u.pathname)) return null;   // ファイルの共有リンクは対象外
+      let p = decodeURIComponent(u.pathname);
+      const id = u.searchParams.get('id');                                  // …/AllItems.aspx?id=/sites/x/Shared Documents/Folder
+      if (id) p = id; else if (/\.aspx$/i.test(p)) return null;
+      p = p.replace(/\/+$/, '');
+      if (!p || /\.[A-Za-z0-9]{1,5}$/.test(p.split('/').pop())) return null;   // 拡張子があればファイル
+      return { unc: '\\\\' + u.hostname + '@SSL\\DavWWWRoot' + p.replace(/\//g, '\\') };
+    } catch { return null; }
+  }
+
+  // ---------- ショートカットのボード (カード表示) ----------
+  const SC_PAGE = 120;                      // 一度に表示するカードの数 (多いときは「さらに表示」で増やす)
+  SC.cat = ''; SC.dlgItem = null; SC.limit = SC_PAGE; SC.lastSig = '';
+  SC.sort = (() => { try { return localStorage.getItem('scSort') || 'added'; } catch { return 'added'; } })();
+  const scUsageGet = () => { try { return JSON.parse(localStorage.getItem('scUsage')) || {}; } catch { return {}; } };   // 「最近開いた」は、この PC のブラウザだけに記録する
+  function scUsed(id) { const u = scUsageGet(); u[id] = { n: ((u[id] && u[id].n) || 0) + 1, t: Date.now() }; try { localStorage.setItem('scUsage', JSON.stringify(u)); } catch {} }
+
+  // Windows のエクスプローラーで、ファイル/フォルダの場所を開くリンク (ブラウザの確認が出たら許可する)
+  function searchMsUrl(path, isFolder) {
+    let loc = isFolder ? path.replace(/[\\/]+$/, '') : path.replace(/[\\/][^\\/]*$/, '');
+    if (/^[A-Za-z]:$/.test(loc)) loc += '\\';
+    const q = isFolder ? '' : '&query=' + encodeURIComponent(path.split(/[\\/]/).pop());
+    return 'search-ms:displayname=' + encodeURIComponent('検索結果') + q + '&crumb=location:' + encodeURIComponent(loc);
+  }
+  const OFFICE_ICON = { Excel: ['📗', '#16a34a'], Word: ['📘', '#2563eb'], PowerPoint: ['📙', '#ea580c'], Visio: ['📐', '#7c3aed'] };
+  function scType(url) {
+    if (!isLinkable(url)) return { kind: 'none', icon: '🔗', color: '#94a3b8', label: 'リンク未設定' };
+    const off = officeKind(url);
+    if (off) { const [icon, color] = OFFICE_ICON[off.label]; return { kind: 'office', icon, color, label: off.label, off }; }
+    const local = isFileUrl(url);
+    let last = ''; try { last = (local ? fileUrlToPath(url) : decodeURIComponent(new URL(url).pathname)).split(/[\\/]/).filter(Boolean).pop() || ''; } catch {}
+    if (/\.pdf$/i.test(last)) return { kind: 'viewable', icon: '📕', color: '#dc2626', label: 'PDF' };
+    if (/\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(last)) return { kind: 'viewable', icon: '🖼️', color: '#db2777', label: '画像' };
+    if (/\.(txt|log|md|json|xml|html?)$/i.test(last)) return { kind: 'viewable', icon: '📝', color: '#64748b', label: 'テキスト' };
+    if (local) return /\.[^.\\/]{1,8}$/.test(last) && !/[\\/]$/.test(fileUrlToPath(url))
+      ? { kind: 'file', icon: '📄', color: '#64748b', label: 'ファイル' }
+      : { kind: 'folder', icon: '📁', color: '#ca8a04', label: 'フォルダ' };
+    if (TEAMS_RE.test(url)) return { kind: 'web', icon: '💬', color: '#6264a7', label: 'Teams' };
+    if (spFolder(url)) return { kind: 'spfolder', icon: '📁', color: '#0ea5e9', label: 'SharePoint フォルダ' };
+    if (isConsumerShare(url) || /sharepoint\.com$/i.test((() => { try { return new URL(url).hostname; } catch { return ''; } })())) return { kind: 'web', icon: '☁️', color: '#0ea5e9', label: 'クラウド' };
+    return { kind: 'web', icon: '🌐', color: '#475569', label: 'Web' };
+  }
+
+  // そのリンクに対してできる操作 (先頭が主なボタン、2つ目まではカードに表示、残りは「⋯」メニュー)
+  function scActions(x) {
+    const url = x.url || ''; if (!isLinkable(url)) return [];
+    const t = scType(url), acts = [];
+    const web = { label: 'ブラウザで開く', attrs: `href="${esc(url)}" target="_blank" rel="noopener noreferrer"` };
+    const local = isFileUrl(url), path = local ? fileUrlToPath(url) : '';
+    const explorer = local ? { label: t.kind === 'folder' ? 'エクスプローラーで開く' : 'エクスプローラーで場所を開く', attrs: `href="${esc(searchMsUrl(path, t.kind === 'folder'))}"`, title: 'Windows のエクスプローラーで開きます (初回はブラウザの確認が出ます)' } : null;
+    const copyPath = local ? { label: 'パスをコピー', copy: path } : null;
+    switch (t.kind) {
+      case 'office':
+        if (isConsumerShare(url)) acts.push(web);
+        else acts.push({ label: 'アプリで開く', attrs: `href="${esc(t.off.scheme + ':ofe|u|' + officeOpenUrl(url))}"`, title: `${t.off.label} アプリで開きます (初回はブラウザの確認が出ます)` }, web);
+        if (explorer) acts.push(explorer);
+        if (copyPath) acts.push(copyPath);
+        break;
+      case 'viewable': acts.push({ label: '開く', attrs: linkAttrs(url) }); if (explorer) acts.push(explorer); if (copyPath) acts.push(copyPath); break;
+      case 'folder': acts.push(explorer, copyPath, web); break;
+      case 'file': acts.push(explorer, copyPath, web); break;
+      case 'spfolder': { const f = spFolder(url); acts.push({ label: 'フォルダを開く', attrs: linkAttrs(url) }, { label: 'エクスプローラー用パスをコピー', copy: f.unc, title: 'エクスプローラーのアドレス欄に貼り付けると、このフォルダをエクスプローラーで開けます' }); break; }
+      default: acts.push({ label: '開く', attrs: linkAttrs(url) });
+    }
+    return acts;
+  }
+  const scBtn = (a, primary) => a.copy !== undefined
+    ? `<button type="button" class="btn" data-sc="copy" data-copy="${esc(a.copy)}" title="${esc(a.title || a.copy)}">${esc(a.label)}</button>`
+    : `<a class="btn${primary ? ' pri' : ''}" ${a.attrs} data-open="1" title="${esc(a.title || '')}">${esc(a.label)}</a>`;
+
+  function scCardHtml(x) {
+    const url = x.url || '', t = scType(url), acts = scActions(x);
+    const warn = t.kind === 'office' && isConsumerShare(url)
+      ? '<div class="scwarn" title="個人の OneDrive の共有リンク (1drv.ms など) は、Office アプリで直接開けません (Office の仕様です)。アプリで開くには、OneDrive の同期フォルダ内のファイルのパスを、別のショートカットとして登録してください。ブラウザで開いたあと、Excel の「デスクトップアプリで開く」を使う方法もあります">💡 アプリでは開けないリンクです</div>' : '';
+    return `<div class="sccard${x.pinned ? ' pinned' : ''}" data-id="${esc(x.id)}" style="--c:${t.color}">
+      <div class="sctop"><span class="scic" title="${esc(t.label)}">${t.icon}</span><div class="scname">${esc(x.name) || '<span class="hint">(名称なし)</span>'}</div><button type="button" class="scmore linkbtn" data-sc="menu" title="その他の操作">⋯</button></div>
+      ${x.note ? `<div class="scnote">${esc(x.note)}</div>` : ''}
+      <div class="scul" title="${esc(urlToInput(url))}">${esc(linkLabel(url))}</div>${warn}
+      <div class="scacts">${acts.slice(0, 2).map((a, i) => scBtn(a, i === 0)).join('') || '<span class="hint">リンク未設定</span>'}</div>
+    </div>`;
+  }
+
+  function scRender() {
+    if (currentTab !== 'sc' || $('scMain').hidden) return;
+    SC.dirty = false;
+    const usage = scUsageGet(), q = SC.q.trim().toLowerCase();
+    const cats = [...new Set(SC.items.map(x => x.cat || '').filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ja'));
+    if (SC.cat && SC.cat !== '__none' && !cats.includes(SC.cat)) SC.cat = '';
+    const inCat = x => !SC.cat || (SC.cat === '__none' ? !x.cat : x.cat === SC.cat);
+    const list = SC.items.filter(x => inCat(x) && (!q || `${x.name} ${x.note} ${x.url} ${x.cat || ''}`.toLowerCase().includes(q)));
+    const cmp = SC.sort === 'name' ? (a, b) => (a.name || '').localeCompare(b.name || '', 'ja')
+      : SC.sort === 'recent' ? (a, b) => ((usage[b.id] && usage[b.id].t) || 0) - ((usage[a.id] && usage[a.id].t) || 0) : () => 0;
+    const sorted = arr => arr.slice().sort(cmp);
+    const secs = [];
+    const pinned = list.filter(x => x.pinned), rest = list.filter(x => !x.pinned);
+    if (pinned.length) secs.push({ title: '📌 ピン留め', items: sorted(pinned) });
+    if (!q && !SC.cat) {
+      const recent = SC.items.filter(x => usage[x.id]).sort((a, b) => usage[b.id].t - usage[a.id].t).slice(0, 6);
+      if (recent.length) secs.push({ title: '🕒 最近開いた', items: recent });
+    }
+    for (const c of cats) { const it = rest.filter(x => x.cat === c); if (it.length) secs.push({ title: c, items: sorted(it) }); }
+    const none = rest.filter(x => !x.cat);
+    if (none.length) secs.push({ title: cats.length ? '未分類' : '', items: sorted(none) });
+    // 件数が多いときは、先頭から段階的に表示する (条件・並び順を変えると先頭に戻る)
+    const sig = JSON.stringify([SC.q, SC.cat, SC.sort]);
+    if (sig !== SC.lastSig) { SC.limit = SC_PAGE; SC.lastSig = sig; }
+    let shown = 0;
+    const html = secs.map(s => {
+      const take = s.items.slice(0, Math.max(SC.limit - shown, 0));
+      if (!take.length) return '';
+      shown += take.length;
+      return `<section class="scsec">${s.title ? `<h3>${esc(s.title)} <span>${s.items.length}</span></h3>` : ''}<div class="cards">${take.map(scCardHtml).join('')}</div></section>`;
+    }).join('');
+    const hidden = secs.reduce((a, s) => a + s.items.length, 0) - shown;
+    $('scBoard').innerHTML = html + (hidden > 0 ? `<div class="moreRows">${shown} 件を表示中 (残り ${hidden} 件)　<button data-scmore="${SC_PAGE * 2}">さらに ${Math.min(SC_PAGE * 2, hidden)} 件表示</button> <button data-scmore="all">すべて表示</button></div>` : '');
+
+    // カテゴリの絞り込み / 入力候補
+    const chip = (v, label, n) => `<button type="button" class="scchip${SC.cat === v ? ' on' : ''}" data-cat="${esc(v)}">${esc(label)} ${n}</button>`;
+    $('scCats').innerHTML = cats.length ? chip('', 'すべて', SC.items.length) + cats.map(c => chip(c, c, SC.items.filter(x => x.cat === c).length)).join('') + (SC.items.some(x => !x.cat) ? chip('__none', '未分類', SC.items.filter(x => !x.cat).length) : '') : '';
+    $('scCatList').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
+
+    $('scEmpty').hidden = list.length > 0;
+    $('scEmpty').innerHTML = SC.items.length ? '条件に合うショートカットがありません' : '<b>まだ何も登録されていません</b><br>上の入力欄に、リンクやファイルのパスを貼り付けて Enter を押すと、すぐに追加できます。<br><span class="hint">ヒント: エクスプローラーでファイルを Shift+右クリック →「パスのコピー」で、パスをコピーできます</span>';
+    $('scCount').textContent = `${list.length} / ${SC.items.length} 件`;
+    $('scFile').textContent = '📄 ' + SC.handle.name;
+    $('scSort').value = SC.sort;
+  }
+
+  // 追加・編集のダイアログ
+  function scOpenDialog(x) {
+    SC.dlgItem = x || null; SC.editing = x ? x.id : null;
+    $('scDlgTitle').textContent = x ? 'ショートカットを編集' : 'ショートカットを追加';
+    $('sfName').value = x ? x.name || '' : ''; $('sfUrl').value = x ? urlToInput(x.url || '') : '';
+    $('sfNote').value = x ? x.note || '' : ''; $('sfCat').value = x ? x.cat || '' : (SC.cat && SC.cat !== '__none' ? SC.cat : '');
+    $('scDlg').showModal(); $((x ? 'sfName' : 'sfUrl')).focus();
+  }
+  function scDlgSave() {
+    let name = $('sfName').value.trim(), url = $('sfUrl').value.trim().replace(/^["']|["']$/g, '');
+    const note = $('sfNote').value, cat = $('sfCat').value.trim();
+    if (url) {
+      url = normalizeLinkUrl(url);
+      if (!isLinkable(url)) { alert('リンクは http(s):// のURL、またはローカルのパス(ドライブ名から始まるパス、またはネットワークパス)のみ登録できます: ' + url); $('sfUrl').focus(); return; }
+    }
+    if (!name && !url) { alert('ファイル名かリンクを入力してください'); return; }
+    if (!name) name = nameFromUrl(url);
+    const x = SC.dlgItem;
+    scPush(x ? '編集' : '追加');
+    if (x) { Object.assign(x, { name, note, url, modAt: Date.now() }); if (cat) x.cat = cat; else delete x.cat; delete x.appUrl; delete x.office; }
+    else { const n = { id: scUid(), name, note, url, modAt: Date.now() }; if (cat) n.cat = cat; SC.items.push(n); }
+    SC.editing = null; $('scDlg').close(); scSave(); scRender();
+  }
+  // 貼り付けたリンク/パスを、その場で追加する (名前はリンクから自動で付く)
+  function scQuickAdd() {
+    const raw = $('scQuick').value.trim().replace(/^["']|["']$/g, '');   // エクスプローラーの「パスのコピー」は、引用符付きになる
+    if (!raw) return;
+    const url = normalizeLinkUrl(raw);
+    if (!isLinkable(url)) { alert('リンクは http(s):// のURL、またはローカルのパス(ドライブ名から始まるパス、またはネットワークパス)のみ登録できます: ' + raw); return; }
+    if (SC.items.some(x => x.url === url) && !confirm('同じリンクが、すでに登録されています。もう1つ追加しますか？')) return;
+    scPush('追加');
+    const n = { id: scUid(), name: nameFromUrl(url), note: '', url, modAt: Date.now() };
+    if (SC.cat && SC.cat !== '__none') n.cat = SC.cat;
+    SC.items.push(n); $('scQuick').value = ''; scSave(); scRender();
+    scState('「' + n.name + '」を追加しました');
+  }
+
+  // 「⋯」メニュー
+  function showScMenu(btn, x) {
+    const reopen = linkMenu && linkMenu.dataset.id === x.id;
+    closeLinkMenu(); if (reopen) return;
+    const url = x.url || '', local = isFileUrl(url), acts = scActions(x).slice(2);
+    const item = a => a.copy !== undefined
+      ? `<button type="button" data-scm="copy" data-copy="${esc(a.copy)}">${esc(a.label)}</button>`
+      : `<a ${a.attrs} data-open="1" title="${esc(a.title || '')}">${esc(a.label)}</a>`;
+    const m = document.createElement('div');
+    m.className = 'linkmenu scmenu'; m.dataset.id = x.id;
+    m.innerHTML = acts.map(item).join('') + (acts.length ? '<hr>' : '')
+      + (url && !local ? `<button type="button" data-scm="copy" data-copy="${esc(url)}">リンクをコピー</button>` : '')
+      + `<button type="button" data-scm="pin">${x.pinned ? '📌 ピン留めを外す' : '📌 ピン留めする'}</button>`
+      + '<button type="button" data-scm="edit">編集</button><button type="button" class="danger" data-scm="del">削除</button>';
+    document.body.appendChild(m);
+    const r = btn.getBoundingClientRect();
+    m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, innerWidth - m.offsetWidth - 8)) + 'px';
+    m.style.top = (r.bottom + m.offsetHeight + 12 > innerHeight ? Math.max(8, r.top - m.offsetHeight - 4) : r.bottom + 4) + 'px';
+    linkMenu = m;
+    m.addEventListener('click', async e => {
+      if (e.target.closest('a[data-open]')) { scUsed(x.id); closeLinkMenu(); return; }
+      const b = e.target.closest('[data-scm]'); if (!b) return;
+      switch (b.dataset.scm) {
+        case 'copy': { const ok = await copyText(b.dataset.copy); b.textContent = ok ? 'コピーしました' : 'コピー失敗'; setTimeout(closeLinkMenu, 600); break; }
+        case 'pin': closeLinkMenu(); scPush(x.pinned ? 'ピン留め解除' : 'ピン留め'); if (x.pinned) delete x.pinned; else x.pinned = true; x.modAt = Date.now(); scSave(); scRender(); break;
+        case 'edit': closeLinkMenu(); scOpenDialog(x); break;
+        case 'del':
+          closeLinkMenu();
+          if (confirm(`「${x.name || x.url || '(名称なし)'}」を削除しますか？\n(「元に戻す」で復元できます)`)) { scPush('削除'); SC.deleted[x.id] = Date.now(); SC.items = SC.items.filter(i => i !== x); scSave(); scRender(); }
+          break;
+      }
+    });
+  }
+
+  function scInit() {
+    ['reconnect', 'fileInfo', 'btnChange', 'hist', 'saveState', 'watchState'].forEach(id => { const e = $(id); if (e) e.classList.add('task-only'); });   // タスク用の表示は、ショートカットのタブでは隠す
+    document.querySelectorAll('#tabs button').forEach(b => { b.onclick = () => setTab(b.dataset.tab); });
+    $('scBtnNew').onclick = async () => {
+      try { await scUse(await showSaveFilePicker({ suggestedName: 'shortcuts.json', types: pickerTypes }), true); }
+      catch (e) { if (e.name !== 'AbortError') alert('作成に失敗しました: ' + e.message); }
+    };
+    const open = async () => {
+      try { const [h] = await showOpenFilePicker({ types: pickerTypes, startIn: SC.handle || undefined }); await scUse(h, false); }
+      catch (e) { if (e.name !== 'AbortError') alert('読み込みに失敗しました: ' + e.message); }
+    };
+    $('scBtnOpen').onclick = open; $('scBtnRepick').onclick = open;
+    $('scBtnOther').onclick = () => scShow('welcome');
+    $('scBtnUndo').onclick = scUndo; $('scBtnRedo').onclick = scRedo; scHist();
+    $('scBtnChange').onclick = () => { SC.editing = null; scShow('welcome'); };
+
+    // 追加: 貼り付けて Enter / 詳しく入力
+    $('scQuick').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); scQuickAdd(); } });
+    $('scBtnAdd').onclick = () => scOpenDialog(null);
+    // 検索 (Enter で、先頭のものの主なボタンを実行)
+    $('scSearch').addEventListener('input', e => { SC.q = e.target.value; scRender(); });
+    $('scSearch').addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+      const first = $('scBoard').querySelector('.sccard .scacts .btn'); if (first) { e.preventDefault(); first.click(); }
+    });
+    document.addEventListener('keydown', e => {   // 「/」で検索欄へ
+      if (currentTab !== 'sc' || $('scMain').hidden || e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.target.closest && e.target.closest('input, textarea, select, dialog')) return;
+      e.preventDefault(); $('scSearch').focus();
+    });
+    $('scSort').addEventListener('change', e => { SC.sort = e.target.value; try { localStorage.setItem('scSort', SC.sort); } catch {} scRender(); });
+    $('scCats').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (b) { SC.cat = b.dataset.cat; scRender(); } });
+
+    // カード上の操作
+    $('scBoard').addEventListener('click', async e => {
+      const more = e.target.closest('[data-scmore]');
+      if (more) { SC.limit = more.dataset.scmore === 'all' ? Infinity : SC.limit + Number(more.dataset.scmore); scRender(); return; }
+      const card = e.target.closest('.sccard'), x = card && SC.items.find(i => i.id === card.dataset.id); if (!x) return;
+      if (e.target.closest('a[data-open]')) { scUsed(x.id); return; }
+      const b = e.target.closest('[data-sc]'); if (!b) return;
+      if (b.dataset.sc === 'menu') showScMenu(b, x);
+      else if (b.dataset.sc === 'copy') { const label = b.textContent, ok = await copyText(b.dataset.copy); b.textContent = ok ? 'コピーしました' : 'コピー失敗'; setTimeout(() => { b.textContent = label; }, 1200); }
+    });
+    $('scBoard').addEventListener('dblclick', e => {   // 名前をダブルクリックで編集
+      const n = e.target.closest('.sctop'), card = e.target.closest('.sccard'); if (!n || e.target.closest('button')) return;
+      const x = card && SC.items.find(i => i.id === card.dataset.id); if (x) scOpenDialog(x);
+    });
+    $('scBoard').addEventListener('focusout', () => setTimeout(() => { if (SC.dirty && !SC.editing) scRender(); }, 0));
+
+    // ダイアログ
+    $('sfOk').onclick = scDlgSave;
+    $('sfCancel').onclick = () => $('scDlg').close();
+    $('scDlg').addEventListener('close', () => { SC.editing = null; SC.dlgItem = null; if (SC.dirty) scRender(); });
+    $('scDlg').addEventListener('keydown', e => {   // Enter (1行の欄) / Ctrl+Enter = 保存
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+      if (e.ctrlKey || e.metaKey || e.target.tagName === 'INPUT') { e.preventDefault(); scDlgSave(); }
+    });
+
+    (async () => {
+      if (!window.showOpenFilePicker) { scShow('welcome'); $('scBtnNew').disabled = $('scBtnOpen').disabled = true; return; }
+      try { SC.handle = await idb.get('scHandle'); } catch (e) { console.warn(e); }
+      if (!SC.handle) return scShow('welcome');
+      try {
+        if (await SC.handle.queryPermission({ mode: 'readwrite' }) === 'granted') { await scLoadFile(); scShow('main'); scRender(); }
+        else { $('scReconnectMsg').textContent = '前回のファイル「' + SC.handle.name + '」を開き直してください(ブラウザの仕様で、起動のたびに必要です)。'; scShow('reconnect'); }
+      } catch (e) { $('scReconnectMsg').textContent = '「' + SC.handle.name + '」を読み込めません: ' + e.message; scShow('reconnect'); }
+    })();
+    try { if (localStorage.getItem('taskTab') === 'sc') setTab('sc'); } catch {}
+  }
+
   // ---------- 起動 ----------
   async function init() {
-    bindFilters(); bindTable(); bindHead();
+    bindFilters(); bindTable(); bindHead(); scInit();
     $('btnNew').onclick = createFile;
     $('btnOpen').onclick = openFile;
     $('btnUndo').onclick = undo;
     $('btnRedo').onclick = redo;
     document.addEventListener('keydown', e => {
-      if (!(e.ctrlKey || e.metaKey) || $('app').hidden) return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const sc = currentTab === 'sc';
+      if (sc ? $('scMain').hidden : $('app').hidden) return;
       if (e.target.closest('input:not([type=checkbox]), textarea, select')) return; // 入力中はブラウザ標準の取消
       const k = e.key.toLowerCase();
-      if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-      else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+      if (k === 'z' && !e.shiftKey) { e.preventDefault(); sc ? scUndo() : undo(); }
+      else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); sc ? scRedo() : redo(); }
     });
     $('btnOther').onclick = () => { $('reconnect').hidden = true; showWelcome(); };
     $('btnChange').onclick = () => { if (editingId) { releaseLock(editingId); save(); } editingId = null; showWelcome(); };
@@ -1378,7 +1947,7 @@
     window.addEventListener('resize', () => { if (!$('app').hidden) applyWidths(); });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) checkExternalChange(); });
     window.addEventListener('focus', checkExternalChange);
-    startTicker(checkExternalChange, 1000);   // ファイルの更新時刻を1秒おきに確認 (更新時刻を見るだけの軽い処理)
+    startTicker(() => { checkExternalChange(); scCheck(); }, 1000);   // ファイルの更新時刻を1秒おきに確認 (更新時刻を見るだけの軽い処理)
     setInterval(() => {                         // 編集中は、ロックを1分ごとに延長
       const l = editingId && locks[editingId];
       if (l && l.cid === CID) { l.at = Date.now(); l.until = Date.now() + LOCK_MS; save(); }
