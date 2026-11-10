@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>タスク＆ショートカット</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3.5' y='3.5' width='17' height='17' rx='4'/><path d='M8 12.5l3 3 5-6'/></svg>">
 <style>
   :root {
     --bg:#f5f6f8; --card:#fff; --text:#1f2933; --muted:#6b7785; --line:#e1e5ea;
@@ -77,9 +78,9 @@
   .moreRows button { margin-left:6px; }
   .newbadge { display:inline-block; margin-right:6px; padding:0 6px; border-radius:8px; background:var(--danger); color:#fff; font-size:10px; font-weight:700; line-height:16px; vertical-align:1px; letter-spacing:.5px; }
   button.toggle.active { border-color:var(--warn); color:var(--warn); }
-  button.star { border:0; background:transparent; font-size:16px; line-height:1; padding:2px 4px; filter:grayscale(1); opacity:.35; }
-  button.star:hover { filter:none; opacity:.8; }
-  button.star.on { filter:none; opacity:1; }
+  button.star { border:0; background:transparent; line-height:1; padding:2px 4px; color:var(--muted); opacity:.55; }
+  button.star:hover { color:var(--warn); opacity:1; }
+  button.star.on { color:var(--warn); opacity:1; }
   td.pin { text-align:center; }
   tr.pinned td:first-child { box-shadow:inset 3px 0 0 var(--warn); }
   .colrow { display:inline-flex; align-items:center; gap:2px; margin:2px 14px 2px 0; }
@@ -113,7 +114,13 @@
   .sccard:hover { border-color:var(--accent); border-left-color:var(--c, #64748b); }
   .sccard.pinned { box-shadow:0 0 0 1px var(--warn) inset; }
   .sctop { display:flex; align-items:center; gap:8px; }
-  .scic { font-size:22px; line-height:1; }
+  .scic { font-size:22px; line-height:1; color:var(--c, var(--muted)); }
+  .scic svg.ic { width:22px; height:22px; stroke-width:1.5; }
+  svg.ic { width:1.15em; height:1.15em; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; vertical-align:-0.2em; flex:none; }
+  svg.logo { width:26px; height:26px; color:var(--accent); vertical-align:-6px; margin-right:6px; stroke-width:1.8; }
+  .tabs button svg.ic, .segs button svg.ic, header button svg.ic { margin-right:4px; }
+  .kbtn svg.ic, button.star svg.ic, .scmore svg.ic { margin:0; }
+  input[type=search] { background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round'><circle cx='11' cy='11' r='6'/><path d='M20 20l-4.5-4.5'/></svg>"); background-repeat:no-repeat; background-position:8px center; padding-left:28px; }
   .scname { font-weight:700; flex:1; overflow-wrap:anywhere; }
   .scmore { border:0; background:transparent; font-size:18px; padding:0 6px; color:var(--muted); }
   .scnote { font-size:12px; white-space:pre-wrap; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
@@ -166,9 +173,9 @@
   .kname { font-weight:700; flex:1; overflow-wrap:anywhere; }
   .kbtn { border:0; background:transparent; padding:0 4px; color:var(--muted); }
   .kbtn:hover { color:var(--accent); }
-  .kpin { filter:grayscale(1); opacity:.35; }
-  .kpin:hover { filter:none; opacity:.8; }
-  .kpin.on { filter:none; opacity:1; }
+  .kpin { opacity:.55; }
+  .kpin:hover { color:var(--warn); opacity:1; }
+  .kpin.on { color:var(--warn); opacity:1; }
   .kmeta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12px; color:var(--muted); }
   .knote { font-size:12px; color:var(--muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; white-space:pre-wrap; overflow-wrap:anywhere; }
   .klock { font-size:11px; color:var(--warn); }
@@ -198,6 +205,18 @@
   .stickybar { position:sticky; top:var(--s2, 0px); z-index:30; background:var(--bg); display:flow-root; }
   .tablewrap { max-height:max(320px, calc(100vh - var(--s3, 220px) - 16px)); }   /* 表は画面内でスクロールさせ、列見出しも固定する */
   @media (max-width: 800px) { .stickybar { position:static; } .tablewrap { max-height:none; } }
+  .segs button + button { margin-left:-1px; }
+  .sccols { display:flex; gap:10px; align-items:flex-start; overflow-x:auto; padding-bottom:8px; }
+  .sccol { flex:0 0 290px; background:var(--stripe); border:1px solid var(--line); border-radius:8px; padding:8px; min-width:0; }
+  .sccolhead { --c:var(--accent); display:flex; align-items:center; gap:8px; padding:2px 4px 8px; border-bottom:3px solid var(--accent); margin-bottom:8px; }
+  .colcards { display:flex; flex-direction:column; gap:8px; min-height:48px; }
+  .colcards.dropBox { outline:2px dashed var(--accent); outline-offset:-4px; }
+  .sccolnew { background:transparent; border-style:dashed; display:flex; align-items:center; justify-content:center; min-height:80px; }
+  table.sclist { min-width:900px; width:100%; }
+  tr.scrow.dropT td { box-shadow:inset 0 3px 0 var(--accent); }
+  tr.scrow.dropB td { box-shadow:inset 0 -3px 0 var(--accent); }
+  tr.scrow.dragging { opacity:.4; }
+  td.dhc { text-align:center; padding:0 2px; }
   .chip.hold { color:var(--muted); border-color:var(--muted); }
   .remain.hold { color:var(--muted); font-weight:400; }
   tr.hold td { color:var(--muted); }
@@ -257,8 +276,43 @@
 </style>
 </head>
 <body>
+<svg id="iconSprite" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-logo" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.5l3 3 5-6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M9 4h6"/><path d="M10.5 4l-.8 6.2L7 13v1.5h10V13l-2.7-2.8L13.5 4"/><path d="M12 14.5V21"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.6 0l3-3a4 4 0 0 0-5.6-5.6l-1 1"/><path d="M14 10a4 4 0 0 0-5.6 0l-3 3a4 4 0 0 0 5.6 5.6l1-1"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></symbol>
+  <symbol id="i-filetext" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12.5h6M9 15.5h6M9 18.5h3.5"/></symbol>
+  <symbol id="i-pdf" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 16c.8-3 1.6-3 2.4 0s1.6 3 2.4 0"/></symbol>
+  <symbol id="i-sheet" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 14.5h16M10 4v16"/></symbol>
+  <symbol id="i-slides" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="11.5" rx="1.5"/><path d="M12 15.5V20M8.5 20h7"/></symbol>
+  <symbol id="i-diagram" viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="5" rx="1"/><rect x="13.5" y="15" width="7" height="5" rx="1"/><path d="M7 9v6h6.5"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 18l5-5 4 4 3-3 4 4"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-8l-4.5 4v-4H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18.5a4.2 4.2 0 0 1-.6-8.4A5.8 5.8 0 0 1 17.6 9.3a4.6 4.6 0 0 1-.1 9.2z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z"/><path d="M14 7l3 3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-4"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h4"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-cards" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.2"/><rect x="13" y="4" width="7" height="7" rx="1.2"/><rect x="4" y="13" width="7" height="7" rx="1.2"/><rect x="13" y="13" width="7" height="7" rx="1.2"/></symbol>
+  <symbol id="i-board" viewBox="0 0 24 24"><rect x="4" y="4" width="4.5" height="16" rx="1.2"/><rect x="10" y="4" width="4.5" height="10" rx="1.2"/><rect x="16" y="4" width="4.5" height="13" rx="1.2"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.7" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><g fill="currentColor" stroke="none"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></g></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 17.5h6M10 20.5h4"/><path d="M12 3.5a6 6 0 0 0-3.6 10.8c.4.4.6.9.6 1.4v.3h6v-.3c0-.5.2-1 .6-1.4A6 6 0 0 0 12 3.5z"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6.5 3.5h11v17L12 16.5l-5.5 4z"/></symbol>
+  <symbol id="i-tasks" viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5v-1h6v1"/><path d="M8.8 13.2l2.4 2.4 4-4.6"/></symbol>
+</svg>
 <header>
-  <h1>📋 タスク＆ショートカット</h1>
+  <h1><svg class="ic logo"><use href="#i-logo"/></svg>タスク＆ショートカット</h1>
   <div id="reconnect" class="banner" hidden>
     <span id="reconnectMsg">前回のファイルへのアクセス許可が必要です。</span>
     <button class="primary" id="btnRepick">同じファイルを選び直す</button>
@@ -274,14 +328,14 @@
   <span id="fileInfo"></span>
   <button id="btnChange" hidden>ファイル変更</button>
   <span class="hist" id="hist" hidden>
-    <button id="btnUndo" title="元に戻す (Ctrl+Z)" disabled>↶ 元に戻す</button>
-    <button id="btnRedo" title="やり直す (Ctrl+Y)" disabled>↷ やり直す</button>
+    <button id="btnUndo" title="元に戻す (Ctrl+Z)" disabled><svg class="ic"><use href="#i-undo"/></svg> 元に戻す</button>
+    <button id="btnRedo" title="やり直す (Ctrl+Y)" disabled><svg class="ic"><use href="#i-redo"/></svg> やり直す</button>
   </span>
   <span id="scFile" class="hint sc-only" hidden></span>
   <button id="scBtnChange" class="sc-only" hidden>ファイル変更</button>
   <span class="hist sc-only" id="scHist" hidden>
-    <button id="scBtnUndo" title="元に戻す (Ctrl+Z)" disabled>↶ 元に戻す</button>
-    <button id="scBtnRedo" title="やり直す (Ctrl+Y)" disabled>↷ やり直す</button>
+    <button id="scBtnUndo" title="元に戻す (Ctrl+Z)" disabled><svg class="ic"><use href="#i-undo"/></svg> 元に戻す</button>
+    <button id="scBtnRedo" title="やり直す (Ctrl+Y)" disabled><svg class="ic"><use href="#i-redo"/></svg> やり直す</button>
   </span>
   <span id="scState" class="sc-only"></span>
   <span id="saveState"></span>
@@ -290,9 +344,9 @@
 
 <main>
   <nav class="tabs" id="tabs">
-    <button data-tab="tasks" class="on">📋 タスク</button>
-    <button data-tab="sc">🔖 ショートカット</button>
-    <button data-tab="sn">💬 定型文</button>
+    <button data-tab="tasks" class="on"><svg class="ic"><use href="#i-tasks"/></svg>タスク</button>
+    <button data-tab="sc"><svg class="ic"><use href="#i-bookmark"/></svg>ショートカット</button>
+    <button data-tab="sn"><svg class="ic"><use href="#i-chat"/></svg>定型文</button>
   </nav>
   <div id="tabTasks">
   <div id="welcome" hidden>
@@ -311,7 +365,7 @@
     <div class="summary" id="summary"></div>
     <div class="filters">
       <div class="search">
-        <input type="search" id="fText" placeholder="🔍 キーワード検索">
+        <input type="search" id="fText" placeholder="キーワード検索">
         <select id="fTextField" title="検索対象"></select>
       </div>
       <select id="fStatus"></select>
@@ -324,7 +378,7 @@
       <span class="sep"></span>
       <select id="fPreset" title="保存した条件"></select>
       <details class="more" id="more">
-        <summary title="条件の保存・列の初期化">⋯</summary>
+        <summary title="条件の保存・列の初期化"><svg class="ic"><use href="#i-more"/></svg></summary>
         <div class="menu">
           <button id="btnPresetSave">現在の条件を保存…</button>
           <button id="btnPresetDel" class="danger">選択中の条件を削除</button>
@@ -333,7 +387,7 @@
           <button id="btnColReset" title="見出しのドラッグで列の移動、境界のドラッグで列幅を変更できます">列の並び・幅を初期化</button>
         </div>
       </details>
-      <span class="segs" title="表示の切り替え"><button id="vwList" class="on">☰ 一覧</button><button id="vwBoard">▦ カンバン</button></span>
+      <span class="segs" title="表示の切り替え"><button id="vwList" class="on"><svg class="ic"><use href="#i-list"/></svg>一覧</button><button id="vwBoard"><svg class="ic"><use href="#i-board"/></svg>カンバン</button></span>
       <span class="count" id="count"></span>
       <button class="primary" id="btnAdd">＋ タスク追加</button>
     </div>
@@ -381,7 +435,8 @@
         <button id="scBtnAdd">詳しく入力して追加</button>
       </div>
       <div class="scbar2">
-        <input type="search" id="scSearch" placeholder="🔍 検索 (Enter で先頭を開く / 「/」で移動)" style="width:320px">
+        <input type="search" id="scSearch" placeholder="検索 (Enter で先頭を開く / 「/」で移動)" style="width:320px">
+        <span class="segs" title="表示の切り替え"><button id="scViewCard"><svg class="ic"><use href="#i-cards"/></svg>カード</button><button id="scViewList"><svg class="ic"><use href="#i-list"/></svg>一覧</button></span>
         <select id="scSort" title="手動: カードをドラッグして、好きな順に並べ替えられます (同じグループの中で)"><option value="added">手動 (ドラッグで並べ替え)</option><option value="name">名前順</option><option value="recent">最近開いた順</option></select>
         <div id="scCats" class="scchips"></div>
         <span class="count" id="scCount"></span>
@@ -416,7 +471,7 @@
         <button id="snBtnAdd">詳しく入力して追加</button>
       </div>
       <div class="scbar2">
-        <input type="search" id="snSearch" placeholder="🔍 検索 (Enter で先頭をコピー / 「/」で移動)" style="width:320px">
+        <input type="search" id="snSearch" placeholder="検索 (Enter で先頭をコピー / 「/」で移動)" style="width:320px">
         <select id="snSort" title="並び順"><option value="added">手動 (ドラッグで並べ替え)</option><option value="name">名前順</option><option value="recent">最近使った順</option></select>
         <div id="snCats" class="scchips"></div>
         <span class="count" id="snCount"></span>
@@ -446,6 +501,7 @@
   const STATUS_ORDER = { '未着手': 0, '進行中': 1, '保留': 2, '完了': 3 };
 
   const $ = id => document.getElementById(id);
+  const ic = (n, cls) => `<svg class="ic${cls ? ' ' + cls : ''}" aria-hidden="true"><use href="#i-${n}"/></svg>`;   // 線画アイコン (HTML 先頭のスプライトを参照)
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   // ---------- IndexedDB (ファイルハンドル保存) ----------
@@ -800,7 +856,7 @@
   function showApp() {
     setTimeout(refreshReconnectUi, 0);
     $('welcome').hidden = true; $('reconnect').hidden = true; $('app').hidden = false; $('btnChange').hidden = false; $('hist').hidden = false;
-    $('fileInfo').textContent = '📄 ' + handle.name;
+    $('fileInfo').innerHTML = ic('file') + ' ' + esc(handle.name);
     setState('');
     renderPresets();
     render();
@@ -1002,20 +1058,20 @@
   function linkCell(t) {
     const ls = validLinks(t);
     if (!ls.length) return '<td></td>';
-    if (ls.length === 1 && !isFileUrl(ls[0].url)) return `<td><a class="linkicon" ${linkAttrs(ls[0].url)} title="${esc(linkTip(ls[0]))}">🔗</a></td>`;
+    if (ls.length === 1 && !isFileUrl(ls[0].url)) return `<td><a class="linkicon" ${linkAttrs(ls[0].url)} title="${esc(linkTip(ls[0]))}">${ic('link')}</a></td>`;
     // 複数件、またはローカルファイル (開く / パスをコピー の選択が必要) はポップアップ
-    const icon = ls.length === 1 ? '📁' : `🔗<span>${ls.length}</span>`;
+    const icon = ls.length === 1 ? ic('folder') : `${ic('link')}<span>${ls.length}</span>`;
     return `<td><button class="linkbtn" data-a="links" title="${esc(ls.map(l => l.title || linkLabel(l.url)).join('\n'))}">${icon}</button></td>`;
   }
   // リンク編集: 「別名」「URL」を行ごとの入力欄で扱う
   const linkRow = (l = { title: '', url: '' }) =>
     `<div class="lrow"><input type="text" class="l-title" placeholder="別名(省略可)" value="${esc(l.title)}"><input type="text" class="l-url" placeholder="https://… または C:&#92;フォルダ&#92;ファイル" value="${esc(urlToInput(l.url))}"><button type="button" class="lrm" data-a="lrm" title="この行を削除">×</button></div>`;
   const linkEdit = t => `<td><div class="linkedit">${((t.links || []).length ? t.links : [undefined]).map(linkRow).join('')}<button type="button" class="ladd" data-a="ladd">＋ リンク追加</button></div></td>`;
-  const pinCell = t => `<td class="pin"><button type="button" class="star${t.pinned ? ' on' : ''}" data-a="pin" title="${t.pinned ? 'ピン留めを外す' : 'ピン留めする(先頭に固定)'}">📌</button></td>`;
+  const pinCell = t => `<td class="pin"><button type="button" class="star${t.pinned ? ' on' : ''}" data-a="pin" title="${t.pinned ? 'ピン留めを外す' : 'ピン留めする(先頭に固定)'}">${ic('pin')}</button></td>`;
   const effortCell = t => `<td><input type="number" class="effort" data-f="effort" min="0" step="0.5" value="${esc(t.effort ?? '')}" placeholder="h"></td>`;
   const dateEdit = (id, v) => `<td><input type="date" id="${id}" value="${esc(v)}"></td>`;
   const COLS = {
-    pin:       { label: '📌', sort: 'pinned', w: 44, view: pinCell, edit: pinCell },
+    pin:       { label: ic('pin'), sort: 'pinned', w: 44, view: pinCell, edit: pinCell },
     created:   { label: '起票日', sort: 'created', w: 130,
                  view: t => `<td${realTs(t) !== null ? ` title="作成: ${fmtTs(realTs(t))}"` : ''}>${esc(t.created)}</td>`, edit: t => dateEdit('e_created', t.created) },
     creator:   { label: '起票者', sort: 'creator', w: 100,
@@ -1089,7 +1145,7 @@
     const lk = lockedByOther(t.id);
     const rowCls = cls + (t.pinned ? ' pinned' : '') + (lk ? ' locked' : '');
     let cells = visCols().map(k => k === 'act' && lk
-      ? `<td class="act"><span class="lockinfo" data-unlock="${t.id}" title="クリックで強制解除 (相手がいないときだけ)">🔒 ${esc(lk.by)}さんが編集中</span></td>`
+      ? `<td class="act"><span class="lockinfo" data-unlock="${t.id}" title="クリックで強制解除 (相手がいないときだけ)">${ic('lock')} ${esc(lk.by)}さんが編集中</span></td>`
       : COLS[k].view(t)).join('');
     if (lk) cells = cells.replace(/<(select|textarea|input)\b/g, '<$1 disabled').replace(/<button( type="button" class="star| data-a="start")/g, '<button disabled$1');
     return `<tr class="${rowCls}" data-id="${t.id}">${cells}</tr>`;
@@ -1228,7 +1284,7 @@
     m.className = 'linkmenu'; m.dataset.id = t.id;
     m.innerHTML = validLinks(t).map(l => {
       const file = isFileUrl(l.url);
-      const a = `<a ${linkAttrs(l.url)} title="${esc(urlToInput(l.url))}">${file ? '📁' : '🔗'} ${l.title ? `<b>${esc(l.title)}</b><small>${esc(linkLabel(l.url))}</small>` : esc(linkLabel(l.url))}</a>`;
+      const a = `<a ${linkAttrs(l.url)} title="${esc(urlToInput(l.url))}">${ic(file ? 'folder' : 'link')} ${l.title ? `<b>${esc(l.title)}</b><small>${esc(linkLabel(l.url))}</small>` : esc(linkLabel(l.url))}</a>`;
       return `<div class="mi">${a}${file ? `<button type="button" class="cp" data-copy="${esc(fileUrlToPath(l.url))}" title="パスをクリップボードにコピー (エクスプローラーのアドレス欄に貼り付けて開けます)">パスをコピー</button>` : ''}</div>`;
     }).join('');
     document.body.appendChild(m);
@@ -1262,7 +1318,7 @@
   // ---------- イベント ----------
   function paintPin() {
     const b = $('btnPinFirst'); if (!b) return;
-    b.textContent = '📌 先頭に固定: ' + (pinFirst ? 'ON' : 'OFF'); b.classList.toggle('active', pinFirst);
+    b.innerHTML = ic('pin') + ' 先頭に固定: ' + (pinFirst ? 'ON' : 'OFF'); b.classList.toggle('active', pinFirst);
   }
   const COL_NAMES = { pin: 'ピン留め', act: '操作(編集・削除)' };
   function renderColPanel() {
@@ -1491,14 +1547,14 @@
     let due = '';
     if (t.due) {
       const txt = done ? '' : hold ? '保留中' : r < 0 ? `${-r}日超過` : r === 0 ? '今日' : `あと${r}日`;
-      due = `<span class="${live && r < 0 ? 'over' : live && r <= 3 ? 'soon' : ''}">📅 ${esc(t.due)}${txt ? ` (${txt})` : ''}</span>`;
+      due = `<span class="${live && r < 0 ? 'over' : live && r <= 3 ? 'soon' : ''}">${ic('calendar')} ${esc(t.due)}${txt ? ` (${txt})` : ''}</span>`;
     }
     const ls = validLinks(t).length;
     return `<div class="kcard${t.pinned ? ' pinned' : ''}${live && r < 0 ? ' overdue' : live && r === 0 ? ' today' : ''}${lk ? ' locked' : ''}${done ? ' done' : ''}" data-id="${esc(t.id)}" style="--pc:${PRIO_COLOR[t.priority] || '#64748b'}">
-      <div class="ktop">${lk ? '' : '<span class="dh" title="ドラッグして、別の列へ移動">⠿</span>'}${isNew(t) ? '<span class="newbadge">NEW</span>' : ''}<div class="kname">${esc(t.name) || '<span class="hint">(無題)</span>'}</div><button type="button" class="kbtn kpin${t.pinned ? ' on' : ''}" data-k="pin" title="ピン留め">📌</button><button type="button" class="kbtn" data-k="edit" title="編集">✎</button></div>
-      <div class="kmeta"><span class="badge p-${esc(t.priority)}">${esc(t.priority)}</span>${due}${t.effort !== '' && t.effort != null ? `<span>⏱ ${esc(t.effort)}h</span>` : ''}${ls ? `<button type="button" class="kbtn linkbtn" data-k="links" title="リンク">🔗<span>${ls}</span></button>` : ''}${t.creator ? `<span title="起票者">👤 ${esc(t.creator)}</span>` : ''}</div>
-      ${t.note ? `<div class="knotewrap"><div class="knote">${esc(t.note)}</div><button type="button" class="kbtn" data-k="copynote" title="備考をすべてコピー">📋</button></div>` : ''}
-      ${lk ? `<div class="klock">🔒 ${esc(lk.by)}さんが編集中</div>` : ''}
+      <div class="ktop">${lk ? '' : '<span class="dh" title="ドラッグして、別の列へ移動">' + ic('grip') + '</span>'}${isNew(t) ? '<span class="newbadge">NEW</span>' : ''}<div class="kname">${esc(t.name) || '<span class="hint">(無題)</span>'}</div><button type="button" class="kbtn kpin${t.pinned ? ' on' : ''}" data-k="pin" title="ピン留め">${ic('pin')}</button><button type="button" class="kbtn" data-k="edit" title="編集">${ic('edit')}</button></div>
+      <div class="kmeta"><span class="badge p-${esc(t.priority)}">${esc(t.priority)}</span>${due}${t.effort !== '' && t.effort != null ? `<span>${ic('clock')} ${esc(t.effort)}h</span>` : ''}${ls ? `<button type="button" class="kbtn linkbtn" data-k="links" title="リンク">${ic('link')}<span>${ls}</span></button>` : ''}${t.creator ? `<span title="起票者">${ic('user')} ${esc(t.creator)}</span>` : ''}</div>
+      ${t.note ? `<div class="knotewrap"><div class="knote">${esc(t.note)}</div><button type="button" class="kbtn" data-k="copynote" title="備考をすべてコピー">${ic('copy')}</button></div>` : ''}
+      ${lk ? `<div class="klock">${ic('lock')} ${esc(lk.by)}さんが編集中</div>` : ''}
     </div>`;
   }
   function renderBoard(list) {
@@ -1573,22 +1629,25 @@
   // そのため、つまみ (⠿) を押している間だけ、ドラッグできるようにする。それ以外では、文字を普通に選択してコピーできる
   function armHandleDrag(board, cardSel) {
     board.addEventListener('mousedown', e => { const h = e.target.closest('.dh'), c = h && h.closest(cardSel); if (c) c.setAttribute('draggable', 'true'); });
-    const off = () => board.querySelectorAll(cardSel + '[draggable]').forEach(c => c.removeAttribute('draggable'));
+    const off = () => board.querySelectorAll(cardSel.split(',').map(x => x.trim() + '[draggable]').join(',')).forEach(c => c.removeAttribute('draggable'));
     document.addEventListener('mouseup', off);
     board.addEventListener('dragend', off);
   }
-  // カードの手動の並べ替え (ドラッグ&ドロップ)。同じグループの中で、カードとカードの「間」に落とす (「最近開いた」は対象外)。
+  // カードの手動の並べ替え (ドラッグ&ドロップ)。カードとカードの「間」に落とす (「最近開いた」は対象外)。
   // 落とす位置には、カードの間に線が出る。カードの上でも、カードとカードのすき間でも、一番近いカードを基準に位置が決まる。
   //   - 縦に並んでいるとき: 基準のカードの上半分なら「その前」、下半分なら「その後ろ」
   //   - 横に並んでいる (同じ行) とき: 左半分なら「その前」、右半分なら「その後ろ」
-  function bindReorder(board, cardSel, getList, rerender) {
+  // opts.cross() が true のとき、別のグループ (カンバンの別の列) にも落とせる。そのとき opts.onCross(item, グループのキー) で、所属を変える
+  function bindReorder(board, cardSel, getList, rerender, opts = {}) {
     let dragId = null, dragSec = null;
-    const MARKS = ['dropL', 'dropR', 'dropT', 'dropB'];
+    const BOX = '.cards, .rowbox, .colcards';
+    const MARKS = ['dropL', 'dropR', 'dropT', 'dropB', 'dropBox'];
     const clearDrop = () => board.querySelectorAll(MARKS.map(m => '.' + m).join(',')).forEach(c => c.classList.remove(...MARKS));
+    const cross = () => !!(opts.cross && opts.cross());
     const locate = e => {
       if (!dragId) return null;
-      const box = e.target.closest && e.target.closest('.cards');
-      if (!box || box.dataset.sec !== dragSec || dragSec === 'recent') return null;
+      const box = e.target.closest && e.target.closest(BOX);
+      if (!box || box.dataset.sec === 'recent' || (box.dataset.sec !== dragSec && !cross())) return null;
       let best = null, bestD = Infinity;
       for (const c of box.querySelectorAll(cardSel)) {
         if (c.dataset.id === dragId) continue;
@@ -1598,12 +1657,12 @@
         const dist = Math.hypot(dx, dy);
         if (dist < bestD) { bestD = dist; best = { card: c, r }; }
       }
-      if (!best) return null;
-      const src = [...box.querySelectorAll(cardSel)].find(c => c.dataset.id === dragId);
+      if (!best) return cross() ? { box, card: null, before: false, mark: 'dropBox' } : null;   // 空の列には、末尾に入れる
+      const src = [...board.querySelectorAll(cardSel)].find(c => c.dataset.id === dragId);
       const sr = src && src.getBoundingClientRect();
-      const sameRow = !!sr && Math.abs(best.r.top - sr.top) < Math.min(sr.height, best.r.height) / 2;
+      const sameRow = !!sr && Math.abs(best.r.top - sr.top) < Math.min(sr.height, best.r.height) / 2 && src.parentNode === box;
       const before = sameRow ? e.clientX < best.r.left + best.r.width / 2 : e.clientY < best.r.top + best.r.height / 2;
-      return { card: best.card, before, mark: sameRow ? (before ? 'dropL' : 'dropR') : (before ? 'dropT' : 'dropB') };
+      return { box, card: best.card, before, mark: sameRow ? (before ? 'dropL' : 'dropR') : (before ? 'dropT' : 'dropB') };
     };
     board.addEventListener('dragstart', e => {
       const card = e.target.closest && e.target.closest(cardSel);
@@ -1616,24 +1675,26 @@
       clearDrop();
       const d = locate(e); if (!d) return;
       e.preventDefault(); e.dataTransfer.dropEffect = 'move';
-      d.card.classList.add(d.mark);
+      (d.card || d.box).classList.add(d.mark);
     });
     board.addEventListener('drop', e => {
       const d = locate(e); if (!d) return;
       e.preventDefault();
       const arr = getList(), from = arr.findIndex(x => x.id === dragId); if (from < 0) return;
-      scPush('並べ替え');
+      const moved = d.box.dataset.sec !== dragSec;
+      scPush(moved ? 'カテゴリの変更' : '並べ替え');
       const [item] = arr.splice(from, 1);
-      let to = arr.findIndex(x => x.id === d.card.dataset.id); if (!d.before) to++;
-      arr.splice(to, 0, item);
+      if (moved && opts.onCross) opts.onCross(item, d.box.dataset.sec);
+      if (d.card) { let to = arr.findIndex(x => x.id === d.card.dataset.id); if (!d.before) to++; arr.splice(to, 0, item); }
+      else arr.push(item);
       dragId = null; scSave(); rerender();
     });
     board.addEventListener('dragend', () => { dragId = null; clearDrop(); board.querySelectorAll('.dragging').forEach(c => c.classList.remove('dragging')); });
   }
 
   async function copyNote(text, btn) {   // カードの備考・メモ全体をコピーするボタン (カード上では、長い文が省略表示されるため)
-    const label = btn.textContent, ok = await copyText(text || '');
-    btn.textContent = ok ? '✓' : '×'; setTimeout(() => { btn.textContent = label; }, 1000);
+    const html = btn.innerHTML, ok = await copyText(text || '');
+    btn.innerHTML = ic(ok ? 'check' : 'warn'); setTimeout(() => { btn.innerHTML = html; }, 1000);
   }
 
   function bindTable() {
@@ -1806,21 +1867,21 @@
   let checkStarted = 0;
   function watch(msg, bad) {   // ヘッダーに監視の状態を表示 (動いていない/止まっている場合に気づけるように)
     const el = $('watchState'); if (!el) return;
-    el.textContent = msg; el.style.color = bad ? 'var(--danger)' : 'var(--muted)';
+    el.innerHTML = ic(bad ? 'warn' : 'eye') + ' ' + esc(msg); el.style.color = bad ? 'var(--danger)' : 'var(--muted)';
   }
   async function checkExternalChange() {
     if (!handle || $('app').hidden) return;
     if (checking && Date.now() - checkStarted < 15000) return;     // 前回の確認が固まっても、15秒たてば再開する
     checking = true; checkStarted = Date.now();
     try {
-      if (await handle.queryPermission({ mode: 'readwrite' }) !== 'granted') { watch('⚠ ファイルへのアクセス許可がありません(「ファイル変更」から開き直してください)', true); return; }
+      if (await handle.queryPermission({ mode: 'readwrite' }) !== 'granted') { watch('ファイルへのアクセス許可がありません(「ファイル変更」から開き直してください)', true); return; }
       await saving;
       const res = await pullRemote();
       if (res && res.needsWrite) save();     // 自分だけが持つ変更やロックをファイルに反映
       const sig = lockSig();
       if (sig !== lastLockSig) { lastLockSig = sig; onRemoteMerged(true); }   // 「◯◯さんが編集中」の表示を、再読み込みなしで更新
-      watch('👁 監視中 ' + new Date().toLocaleTimeString());
-    } catch (e) { console.warn(e); watch('⚠ 監視エラー: ' + e.message, true); }
+      watch('監視中 ' + new Date().toLocaleTimeString());
+    } catch (e) { console.warn(e); watch('監視エラー: ' + e.message, true); }
     finally { checking = false; }
   }
 
@@ -2032,23 +2093,23 @@
     const q = isFolder ? '' : '&query=' + encodeURIComponent(path.split(/[\\/]/).pop());
     return 'search-ms:displayname=' + encodeURIComponent('検索結果') + q + '&crumb=location:' + encodeURIComponent(loc);
   }
-  const OFFICE_ICON = { Excel: ['📗', '#16a34a'], Word: ['📘', '#2563eb'], PowerPoint: ['📙', '#ea580c'], Visio: ['📐', '#7c3aed'] };
+  const OFFICE_ICON = { Excel: ['sheet', '#16a34a'], Word: ['filetext', '#2563eb'], PowerPoint: ['slides', '#ea580c'], Visio: ['diagram', '#7c3aed'] };
   function scType(url) {
-    if (!isLinkable(url)) return { kind: 'none', icon: '🔗', color: '#94a3b8', label: 'リンク未設定' };
+    if (!isLinkable(url)) return { kind: 'none', icon: 'link', color: '#94a3b8', label: 'リンク未設定' };
     const off = officeKind(url);
     if (off) { const [icon, color] = OFFICE_ICON[off.label]; return { kind: 'office', icon, color, label: off.label, off }; }
     const local = isFileUrl(url);
     let last = ''; try { last = (local ? fileUrlToPath(url) : decodeURIComponent(new URL(url).pathname)).split(/[\\/]/).filter(Boolean).pop() || ''; } catch {}
-    if (/\.pdf$/i.test(last)) return { kind: 'viewable', icon: '📕', color: '#dc2626', label: 'PDF' };
-    if (/\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(last)) return { kind: 'viewable', icon: '🖼️', color: '#db2777', label: '画像' };
-    if (/\.(txt|log|md|json|xml|html?)$/i.test(last)) return { kind: 'viewable', icon: '📝', color: '#64748b', label: 'テキスト' };
+    if (/\.pdf$/i.test(last)) return { kind: 'viewable', icon: 'pdf', color: '#dc2626', label: 'PDF' };
+    if (/\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(last)) return { kind: 'viewable', icon: 'image', color: '#db2777', label: '画像' };
+    if (/\.(txt|log|md|json|xml|html?)$/i.test(last)) return { kind: 'viewable', icon: 'filetext', color: '#64748b', label: 'テキスト' };
     if (local) return /\.[^.\\/]{1,8}$/.test(last) && !/[\\/]$/.test(fileUrlToPath(url))
-      ? { kind: 'file', icon: '📄', color: '#64748b', label: 'ファイル' }
-      : { kind: 'folder', icon: '📁', color: '#ca8a04', label: 'フォルダ' };
-    if (TEAMS_RE.test(url)) return { kind: 'web', icon: '💬', color: '#6264a7', label: 'Teams' };
-    if (spFolder(url)) return { kind: 'spfolder', icon: '📁', color: '#0ea5e9', label: 'SharePoint フォルダ' };
-    if (isConsumerShare(url) || /sharepoint\.com$/i.test((() => { try { return new URL(url).hostname; } catch { return ''; } })())) return { kind: 'web', icon: '☁️', color: '#0ea5e9', label: 'クラウド' };
-    return { kind: 'web', icon: '🌐', color: '#475569', label: 'Web' };
+      ? { kind: 'file', icon: 'file', color: '#64748b', label: 'ファイル' }
+      : { kind: 'folder', icon: 'folder', color: '#ca8a04', label: 'フォルダ' };
+    if (TEAMS_RE.test(url)) return { kind: 'web', icon: 'chat', color: '#6264a7', label: 'Teams' };
+    if (spFolder(url)) return { kind: 'spfolder', icon: 'folder', color: '#0ea5e9', label: 'SharePoint フォルダ' };
+    if (isConsumerShare(url) || /sharepoint\.com$/i.test((() => { try { return new URL(url).hostname; } catch { return ''; } })())) return { kind: 'web', icon: 'cloud', color: '#0ea5e9', label: 'クラウド' };
+    return { kind: 'web', icon: 'globe', color: '#475569', label: 'Web' };
   }
 
   // そのリンクに対してできる操作 (先頭が主なボタン、2つ目まではカードに表示、残りは「⋯」メニュー)
@@ -2081,13 +2142,64 @@
   function scCardHtml(x) {
     const url = x.url || '', t = scType(url), acts = scActions(x);
     const warn = t.kind === 'office' && isConsumerShare(url)
-      ? '<div class="scwarn" title="個人の OneDrive の共有リンク (1drv.ms など) は、Office アプリで直接開けません (Office の仕様です)。アプリで開くには、OneDrive の同期フォルダ内のファイルのパスを、別のショートカットとして登録してください。ブラウザで開いたあと、Excel の「デスクトップアプリで開く」を使う方法もあります">💡 アプリでは開けないリンクです</div>' : '';
+      ? '<div class="scwarn" title="個人の OneDrive の共有リンク (1drv.ms など) は、Office アプリで直接開けません (Office の仕様です)。アプリで開くには、OneDrive の同期フォルダ内のファイルのパスを、別のショートカットとして登録してください。ブラウザで開いたあと、Excel の「デスクトップアプリで開く」を使う方法もあります">' + ic('bulb') + ' アプリでは開けないリンクです</div>' : '';
     return `<div class="sccard${x.pinned ? ' pinned' : ''}" data-id="${esc(x.id)}" style="--c:${t.color}">
-      <div class="sctop">${SC.sort === 'added' ? '<span class="dh" title="ドラッグして並べ替え">⠿</span>' : ''}<span class="scic" title="${esc(t.label)}">${t.icon}</span><div class="scname">${esc(x.name) || '<span class="hint">(名称なし)</span>'}</div><button type="button" class="scmore linkbtn" data-sc="menu" title="その他の操作">⋯</button></div>
-      ${x.note ? `<div class="scnotewrap"><div class="scnote">${esc(x.note)}</div><button type="button" class="kbtn" data-sc="copynote" title="メモをすべてコピー">📋</button></div>` : ''}
+      <div class="sctop">${scHandle()}<span class="scic" title="${esc(t.label)}">${ic(t.icon)}</span><div class="scname">${esc(x.name) || '<span class="hint">(名称なし)</span>'}</div><button type="button" class="scmore linkbtn" data-sc="menu" title="その他の操作">${ic('more')}</button></div>
+      ${x.note ? `<div class="scnotewrap"><div class="scnote">${esc(x.note)}</div><button type="button" class="kbtn" data-sc="copynote" title="メモをすべてコピー">${ic('copy')}</button></div>` : ''}
       <div class="scul" title="${esc(urlToInput(url))}">${esc(linkLabel(url))}</div>${warn}
       <div class="scacts">${acts.slice(0, 2).map((a, i) => scBtn(a, i === 0)).join('') || '<span class="hint">リンク未設定</span>'}</div>
     </div>`;
+  }
+
+  // ---------- ショートカットの表示の切り替え (カード / カンバン / 一覧) ----------
+  SC.view = (() => { try { const v = localStorage.getItem('scView'); return v === 'list' ? 'list' : 'card'; } catch { return 'card'; } })();
+  // 並べ替え用のつまみ: 手動の並び順のとき、またはカンバン (列の間の移動) のときだけ出す
+  const scHandle = () => SC.sort === 'added' ? '<span class="dh" title="ドラッグして移動">' + ic('grip') + '</span>' : '';
+  // 件数が多いときは、先頭から段階的に表示する (条件・並び順・表示を変えると先頭に戻る)
+  function scApplyLimit(secs) {
+    let shown = 0;
+    const out = secs.map(s => { const take = s.items.slice(0, Math.max(SC.limit - shown, 0)); shown += take.length; return { ...s, take }; });
+    return { secs: out, shown, hidden: secs.reduce((a, s) => a + s.items.length, 0) - shown };
+  }
+  const scMoreHtml = (shown, hidden) => hidden > 0
+    ? `<div class="moreRows">${shown} 件を表示中 (残り ${hidden} 件)　<button data-scmore="${SC_PAGE * 2}">さらに ${Math.min(SC_PAGE * 2, hidden)} 件表示</button> <button data-scmore="all">すべて表示</button></div>` : '';
+
+  // カード表示: ピン留め → 最近開いた → カテゴリごと
+  function scCardsViewHtml(list, cats, sorted, usage, q) {
+    const secs = [];
+    const pinned = list.filter(x => x.pinned), rest = list.filter(x => !x.pinned);
+    if (pinned.length) secs.push({ key: 'pin', icon: 'pin', title: 'ピン留め', items: sorted(pinned) });
+    if (!q && !SC.cat) {
+      const recent = SC.items.filter(x => usage[x.id]).sort((a, b) => usage[b.id].t - usage[a.id].t).slice(0, 6);
+      if (recent.length) secs.push({ key: 'recent', icon: 'clock', title: '最近開いた', items: recent });
+    }
+    for (const c of cats) { const it = rest.filter(x => x.cat === c); if (it.length) secs.push({ key: 'c:' + c, title: c, items: sorted(it) }); }
+    const none = rest.filter(x => !x.cat);
+    if (none.length) secs.push({ key: 'none', title: cats.length ? '未分類' : '', items: sorted(none) });
+    const { secs: lim, shown, hidden } = scApplyLimit(secs);
+    return lim.filter(s => s.take.length).map(s => `<section class="scsec">${s.title ? `<h3>${s.icon ? ic(s.icon) + ' ' : ''}${esc(s.title)} <span>${s.items.length}</span></h3>` : ''}<div class="cards" data-sec="${esc(s.key)}">${s.take.map(scCardHtml).join('')}</div></section>`).join('') + scMoreHtml(shown, hidden);
+  }
+
+  // 一覧表示: 1行に1件の表 (ピン留め・編集・削除の配置は、タスクの一覧と同じ)
+  function scRowHtml(x) {
+    const url = x.url || '', t = scType(url), acts = scActions(x);
+    return `<tr class="scrow${x.pinned ? ' pinned' : ''}" data-id="${esc(x.id)}">
+      <td class="pin"><button type="button" class="star${x.pinned ? ' on' : ''}" data-sc="pin" title="${x.pinned ? 'ピン留めを外す' : 'ピン留めする(先頭に固定)'}">${ic('pin')}</button></td>
+      <td class="dhc">${SC.sort === 'added' ? '<span class="dh" title="ドラッグして並べ替え">' + ic('grip') + '</span>' : ''}</td>
+      <td class="name"><span class="scic" title="${esc(t.label)}" style="color:${t.color}">${ic(t.icon)}</span> ${esc(x.name) || '<span class="hint">(名称なし)</span>'}</td>
+      <td class="memo">${esc(x.note)}${x.note ? ` <button type="button" class="kbtn" data-sc="copynote" title="メモをすべてコピー">${ic('copy')}</button>` : ''}</td>
+      <td class="scurl" title="${esc(urlToInput(url))}">${esc(linkLabel(url))}</td>
+      <td>${esc(x.cat || '')}</td>
+      <td>${acts.slice(0, 2).map((a, i) => scBtn(a, i === 0)).join('') || '<span class="hint">リンク未設定</span>'}</td>
+      <td class="act"><button data-sc="edit">編集</button> <button class="danger" data-sc="del">削除</button></td></tr>`;
+  }
+  function scTableViewHtml(list, sorted) {
+    const pinned = list.filter(x => x.pinned), rest = list.filter(x => !x.pinned);
+    const { secs, shown, hidden } = scApplyLimit([{ key: 'pin', items: sorted(pinned) }, { key: 'rest', items: sorted(rest) }]);
+    return `<div class="tablewrap"><table class="sclist"><colgroup><col style="width:44px"><col style="width:26px"><col style="width:220px"><col><col style="width:200px"><col style="width:110px"><col style="width:250px"><col style="width:130px"></colgroup><thead><tr><th>${ic('pin')}</th><th></th><th>名前</th><th>メモ</th><th>リンク</th><th>カテゴリ</th><th>開く</th><th></th></tr></thead>${secs.map(s => `<tbody class="rowbox" data-sec="${s.key}">${s.take.map(scRowHtml).join('')}</tbody>`).join('')}</table></div>` + scMoreHtml(shown, hidden);
+  }
+  function scBodyHtml(list, cats, sorted, usage, q) {
+    return SC.view === 'list' ? scTableViewHtml(list, sorted) : scCardsViewHtml(list, cats, sorted, usage, q);
   }
 
   function scRender() {
@@ -2102,28 +2214,10 @@
     const cmp = SC.sort === 'name' ? (a, b) => (a.name || '').localeCompare(b.name || '', 'ja')
       : SC.sort === 'recent' ? (a, b) => ((usage[b.id] && usage[b.id].t) || 0) - ((usage[a.id] && usage[a.id].t) || 0) : () => 0;
     const sorted = arr => arr.slice().sort(cmp);
-    const secs = [];
-    const pinned = list.filter(x => x.pinned), rest = list.filter(x => !x.pinned);
-    if (pinned.length) secs.push({ key: 'pin', title: '📌 ピン留め', items: sorted(pinned) });
-    if (!q && !SC.cat) {
-      const recent = SC.items.filter(x => usage[x.id]).sort((a, b) => usage[b.id].t - usage[a.id].t).slice(0, 6);
-      if (recent.length) secs.push({ key: 'recent', title: '🕒 最近開いた', items: recent });
-    }
-    for (const c of cats) { const it = rest.filter(x => x.cat === c); if (it.length) secs.push({ key: 'c:' + c, title: c, items: sorted(it) }); }
-    const none = rest.filter(x => !x.cat);
-    if (none.length) secs.push({ key: 'none', title: cats.length ? '未分類' : '', items: sorted(none) });
-    // 件数が多いときは、先頭から段階的に表示する (条件・並び順を変えると先頭に戻る)
-    const sig = JSON.stringify([SC.q, SC.cat, SC.sort]);
+    const sig = JSON.stringify([SC.q, SC.cat, SC.sort, SC.view]);
     if (sig !== SC.lastSig) { SC.limit = SC_PAGE; SC.lastSig = sig; }
-    let shown = 0;
-    const html = secs.map(s => {
-      const take = s.items.slice(0, Math.max(SC.limit - shown, 0));
-      if (!take.length) return '';
-      shown += take.length;
-      return `<section class="scsec">${s.title ? `<h3>${esc(s.title)} <span>${s.items.length}</span></h3>` : ''}<div class="cards" data-sec="${esc(s.key)}">${take.map(scCardHtml).join('')}</div></section>`;
-    }).join('');
-    const hidden = secs.reduce((a, s) => a + s.items.length, 0) - shown;
-    $('scBoard').innerHTML = html + (hidden > 0 ? `<div class="moreRows">${shown} 件を表示中 (残り ${hidden} 件)　<button data-scmore="${SC_PAGE * 2}">さらに ${Math.min(SC_PAGE * 2, hidden)} 件表示</button> <button data-scmore="all">すべて表示</button></div>` : '');
+    $('scBoard').innerHTML = scBodyHtml(list, cats, sorted, usage, q);
+    $('scViewCard').classList.toggle('on', SC.view === 'card'); $('scViewList').classList.toggle('on', SC.view === 'list');
 
     // カテゴリの絞り込み / 入力候補
     const chip = (v, label, n) => `<button type="button" class="scchip${SC.cat === v ? ' on' : ''}" data-cat="${esc(v)}">${esc(label)} ${n}</button>`;
@@ -2133,16 +2227,16 @@
     $('scEmpty').hidden = list.length > 0;
     $('scEmpty').innerHTML = SC.items.length ? '条件に合うショートカットがありません' : '<b>まだ何も登録されていません</b><br>上の入力欄に、リンクやファイルのパスを貼り付けて Enter を押すと、すぐに追加できます。<br><span class="hint">ヒント: エクスプローラーでファイルを Shift+右クリック →「パスのコピー」で、パスをコピーできます</span>';
     $('scCount').textContent = `${list.length} / ${SC.items.length} 件`;
-    $('scFile').textContent = '📄 ' + SC.handle.name;
+    $('scFile').innerHTML = ic('file') + ' ' + esc(SC.handle.name);
     $('scSort').value = SC.sort;
   }
 
   // 追加・編集のダイアログ
-  function scOpenDialog(x) {
+  function scOpenDialog(x, presetCat) {
     SC.dlgItem = x || null; SC.editing = x ? x.id : null;
     $('scDlgTitle').textContent = x ? 'ショートカットを編集' : 'ショートカットを追加';
     $('sfName').value = x ? x.name || '' : ''; $('sfUrl').value = x ? urlToInput(x.url || '') : '';
-    $('sfNote').value = x ? x.note || '' : ''; $('sfCat').value = x ? x.cat || '' : (SC.cat && SC.cat !== '__none' ? SC.cat : '');
+    $('sfNote').value = x ? x.note || '' : ''; $('sfCat').value = x ? x.cat || '' : (presetCat !== undefined ? presetCat : (SC.cat && SC.cat !== '__none' ? SC.cat : ''));
     $('scDlg').showModal(); $((x ? 'sfName' : 'sfUrl')).focus();
   }
   function scDlgSave() {
@@ -2186,7 +2280,7 @@
     m.className = 'linkmenu scmenu'; m.dataset.id = x.id;
     m.innerHTML = acts.map(item).join('') + (acts.length ? '<hr>' : '')
       + (url && !local ? `<button type="button" data-scm="copy" data-copy="${esc(url)}">リンクをコピー</button>` : '')
-      + `<button type="button" data-scm="pin">${x.pinned ? '📌 ピン留めを外す' : '📌 ピン留めする'}</button>`
+      + `<button type="button" data-scm="pin">${ic('pin')} ${x.pinned ? 'ピン留めを外す' : 'ピン留めする'}</button>`
       + '<button type="button" data-scm="edit">編集</button><button type="button" class="danger" data-scm="del">削除</button>';
     document.body.appendChild(m);
     const r = btn.getBoundingClientRect();
@@ -2239,6 +2333,9 @@
       if (e.target.closest && e.target.closest('input, textarea, select, dialog')) return;
       e.preventDefault(); $('scSearch').focus();
     });
+    for (const [id, v] of [['scViewCard', 'card'], ['scViewList', 'list']]) {   // 表示の切り替え
+      $(id).onclick = () => { SC.view = v; try { localStorage.setItem('scView', v); } catch {} scRender(); };
+    }
     $('scSort').addEventListener('change', e => { SC.sort = e.target.value; try { localStorage.setItem('scSort', SC.sort); } catch {} scRender(); });
     $('scCats').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (b) { SC.cat = b.dataset.cat; scRender(); } });
 
@@ -2246,22 +2343,27 @@
     $('scBoard').addEventListener('click', async e => {
       const more = e.target.closest('[data-scmore]');
       if (more) { SC.limit = more.dataset.scmore === 'all' ? Infinity : SC.limit + Number(more.dataset.scmore); scRender(); return; }
-      const card = e.target.closest('.sccard'), x = card && SC.items.find(i => i.id === card.dataset.id); if (!x) return;
+      const card = e.target.closest('.sccard, .scrow'), x = card && SC.items.find(i => i.id === card.dataset.id); if (!x) return;
       if (e.target.closest('a[data-open]')) { scUsed(x.id); return; }
       const b = e.target.closest('[data-sc]'); if (!b) return;
       if (b.dataset.sc === 'menu') showScMenu(b, x);
+      else if (b.dataset.sc === 'pin') { scPush(x.pinned ? 'ピン留め解除' : 'ピン留め'); if (x.pinned) delete x.pinned; else x.pinned = true; x.modAt = Date.now(); scSave(); scRender(); }
+      else if (b.dataset.sc === 'edit') scOpenDialog(x);
+      else if (b.dataset.sc === 'del') {
+        if (confirm(`「${x.name || x.url || '(名称なし)'}」を削除しますか？\n(「元に戻す」で復元できます)`)) { scPush('削除'); SC.deleted[x.id] = Date.now(); SC.items = SC.items.filter(i => i !== x); scSave(); scRender(); }
+      }
       else if (b.dataset.sc === 'copynote') copyNote(x.note, b);
       else if (b.dataset.sc === 'copy') { const label = b.textContent, ok = await copyText(b.dataset.copy); b.textContent = ok ? 'コピーしました' : 'コピー失敗'; setTimeout(() => { b.textContent = label; }, 1200); }
     });
     $('scBoard').addEventListener('dblclick', e => {   // 名前をダブルクリックで編集
-      const n = e.target.closest('.sctop'), card = e.target.closest('.sccard'); if (!n || e.target.closest('button')) return;
+      const n = e.target.closest('.sctop, .scrow .name'), card = e.target.closest('.sccard, .scrow'); if (!n || e.target.closest('button')) return;
       const x = card && SC.items.find(i => i.id === card.dataset.id); if (x) scOpenDialog(x);
     });
     $('scBoard').addEventListener('focusout', () => setTimeout(() => { if (SC.dirty && !SC.editing) scRender(); }, 0));
-    armHandleDrag($('scBoard'), '.sccard');
+    armHandleDrag($('scBoard'), '.sccard, .scrow');
 
     // 手動の並べ替え: カードをドラッグして、同じグループ内の、カードとカードの間へ (「最近開いた」は対象外)
-    bindReorder($('scBoard'), '.sccard', () => SC.items, scRender);
+    bindReorder($('scBoard'), '.sccard, .scrow', () => SC.items, scRender);
 
     // ダイアログ
     $('sfOk').onclick = scDlgSave;
@@ -2309,12 +2411,12 @@
   async function snCopy(x, btn) {
     let text; try { text = snExpand(x.text || ''); } catch { return; }   // 入力を取り消したら、コピーしない
     const ok = await copyText(text); scUsed(x.id);
-    if (btn) { const label = btn.textContent; btn.textContent = ok ? 'コピーしました ✓' : 'コピー失敗'; setTimeout(() => { btn.textContent = label; }, 1200); }
+    if (btn) { const label = btn.textContent; btn.textContent = ok ? 'コピーしました' : 'コピー失敗'; setTimeout(() => { btn.textContent = label; }, 1200); }
   }
 
   function snCardHtml(x) {
     return `<div class="sccard sncard${x.pinned ? ' pinned' : ''}" data-id="${esc(x.id)}" style="--c:#0ea5e9">
-      <div class="sctop">${SN.sort === 'added' ? '<span class="dh" title="ドラッグして並べ替え">⠿</span>' : ''}<span class="scic" title="定型文">💬</span><div class="scname">${esc(x.title) || '<span class="hint">(無題)</span>'}</div><button type="button" class="scmore linkbtn" data-sn="menu" title="その他の操作">⋯</button></div>
+      <div class="sctop">${SN.sort === 'added' ? '<span class="dh" title="ドラッグして並べ替え">' + ic('grip') + '</span>' : ''}<span class="scic" title="定型文">${ic('chat')}</span><div class="scname">${esc(x.title) || '<span class="hint">(無題)</span>'}</div><button type="button" class="scmore linkbtn" data-sn="menu" title="その他の操作">${ic('more')}</button></div>
       <div class="snprev">${esc(x.text)}</div>
       <div class="scacts"><button type="button" class="btn pri" data-sn="copy" title="本文をクリップボードにコピーします ({{今日}} などは自動で置き換わります)">コピー</button><button type="button" class="btn" data-sn="edit">編集</button></div>
     </div>`;
@@ -2333,10 +2435,10 @@
     const sorted = arr => arr.slice().sort(cmp);
     const secs = [];
     const pinned = list.filter(x => x.pinned), rest = list.filter(x => !x.pinned);
-    if (pinned.length) secs.push({ key: 'pin', title: '📌 ピン留め', items: sorted(pinned) });
+    if (pinned.length) secs.push({ key: 'pin', icon: 'pin', title: 'ピン留め', items: sorted(pinned) });
     if (!q && !SN.cat) {
       const recent = SC.snips.filter(x => usage[x.id]).sort((a, b) => usage[b.id].t - usage[a.id].t).slice(0, 6);
-      if (recent.length) secs.push({ key: 'recent', title: '🕒 最近使った', items: recent });
+      if (recent.length) secs.push({ key: 'recent', icon: 'clock', title: '最近使った', items: recent });
     }
     for (const c of cats) { const it = rest.filter(x => x.cat === c); if (it.length) secs.push({ key: 'c:' + c, title: c, items: sorted(it) }); }
     const none = rest.filter(x => !x.cat);
@@ -2349,7 +2451,7 @@
       const take = s.items.slice(0, Math.max(SN.limit - shown, 0));
       if (!take.length) return '';
       shown += take.length;
-      return `<section class="scsec">${s.title ? `<h3>${esc(s.title)} <span>${s.items.length}</span></h3>` : ''}<div class="cards" data-sec="${esc(s.key)}">${take.map(snCardHtml).join('')}</div></section>`;
+      return `<section class="scsec">${s.title ? `<h3>${s.icon ? ic(s.icon) + ' ' : ''}${esc(s.title)} <span>${s.items.length}</span></h3>` : ''}<div class="cards" data-sec="${esc(s.key)}">${take.map(snCardHtml).join('')}</div></section>`;
     }).join('');
     const hidden = secs.reduce((a, s) => a + s.items.length, 0) - shown;
     $('snBoard').innerHTML = html + (hidden > 0 ? `<div class="moreRows">${shown} 件を表示中 (残り ${hidden} 件)　<button data-snmore="${SC_PAGE * 2}">さらに ${Math.min(SC_PAGE * 2, hidden)} 件表示</button> <button data-snmore="all">すべて表示</button></div>` : '');
@@ -2360,7 +2462,7 @@
     $('snEmpty').hidden = list.length > 0;
     $('snEmpty').innerHTML = SC.snips.length ? '条件に合う定型文がありません' : '<b>まだ何も登録されていません</b><br>上の入力欄に、よく使う文章を貼り付けて Enter を押すと、すぐに追加できます。<br><span class="hint">ヒント: 本文に {{今日}} {{曜日}} {{時刻}} {{名前}} と書くと、コピーするときに自動で置き換わります。{{?相手の名前}} のように「?」を付けると、コピーするときに入力を求めます</span>';
     $('snCount').textContent = `${list.length} / ${SC.snips.length} 件`;
-    $('scFile').textContent = '📄 ' + SC.handle.name;
+    $('scFile').innerHTML = ic('file') + ' ' + esc(SC.handle.name);
     $('snSort').value = SN.sort;
   }
 
@@ -2397,7 +2499,7 @@
     closeLinkMenu(); if (reopen) return;
     const m = document.createElement('div');
     m.className = 'linkmenu scmenu'; m.dataset.id = x.id;
-    m.innerHTML = `<button type="button" data-snm="pin">${x.pinned ? '📌 ピン留めを外す' : '📌 ピン留めする'}</button><button type="button" data-snm="edit">編集</button><button type="button" data-snm="dup">複製</button><hr><button type="button" class="danger" data-snm="del">削除</button>`;
+    m.innerHTML = `<button type="button" data-snm="pin">${ic('pin')} ${x.pinned ? 'ピン留めを外す' : 'ピン留めする'}</button><button type="button" data-snm="edit">編集</button><button type="button" data-snm="dup">複製</button><hr><button type="button" class="danger" data-snm="del">削除</button>`;
     document.body.appendChild(m);
     const r = btn.getBoundingClientRect();
     m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, innerWidth - m.offsetWidth - 8)) + 'px';
